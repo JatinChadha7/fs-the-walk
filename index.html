@@ -20,19 +20,8 @@ body.showB{background:#E6DFD9}
 body.showB #docA{display:none}
 body.showB #docB{display:block}
 #docA .staffbar,#docB .staffbar{position:static}
-
-/* ---- switcher ---- */
-.switch{
-  position:sticky;top:0;z-index:200;display:flex;align-items:stretch;
-  background:#1C1B1A;border-bottom:1px solid #454340;
-}
-.switch button{
-  flex:1;appearance:none;border:0;background:transparent;cursor:pointer;
-  font-family:'IBM Plex Mono',ui-monospace,monospace;
-  font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;
-  color:#9B9693;padding:15px 12px 13px;border-bottom:2.5px solid transparent;
-  transition:color .25s ease,border-color .25s ease,background .25s ease;line-height:1.5;
-}
+.switch{position:sticky;top:0;z-index:200;display:flex;align-items:stretch;background:#1C1B1A;border-bottom:1px solid #454340}
+.switch button{flex:1;appearance:none;border:0;background:transparent;cursor:pointer;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#9B9693;padding:15px 12px 13px;border-bottom:2.5px solid transparent;transition:color .25s ease,border-color .25s ease,background .25s ease;line-height:1.5}
 .switch button:hover{color:#E6DFD9;background:rgba(255,255,255,.04)}
 .switch button[aria-selected="true"]{color:#F2C418;border-bottom-color:#F2C418}
 .switch button:focus-visible{outline:2px solid #F2C418;outline-offset:-4px}
@@ -40,6 +29,8 @@ body.showB #docB{display:block}
 .switch button i{display:block;font-style:normal;font-size:9px;opacity:.6;margin-top:3px;letter-spacing:.1em}
 @media(max-width:520px){.switch button i{display:none}.switch button{padding:13px 8px 11px}}
 @media(prefers-reduced-motion:reduce){*{transition-duration:.001ms!important}}
+/* failsafe: if scripts never run, show everything after 2s rather than a blank page */
+.nojs #docA .rv,.nojs #docB .rv{opacity:1!important;transform:none!important}
 </style>
 <style>#docA{--concrete:#2D2C2A;
   --concrete-deep:#1C1B1A;
@@ -1594,25 +1585,28 @@ body.showB #docB{display:block}
 
 <script>
 (function(){
-  var body=document.body, tabA=document.getElementById('tabA'), tabB=document.getElementById('tabB');
+  var body=document.body,tabA=document.getElementById('tabA'),tabB=document.getElementById('tabB');
   function show(which){
-    var a = which==='A';
-    body.classList.toggle('showA', a);
-    body.classList.toggle('showB', !a);
-    tabA.setAttribute('aria-selected', a ? 'true':'false');
-    tabB.setAttribute('aria-selected', a ? 'false':'true');
-    try{ location.hash = a ? 'walk' : 'north'; }catch(e){}
+    var a=which==='A';
+    body.classList.toggle('showA',a); body.classList.toggle('showB',!a);
+    tabA.setAttribute('aria-selected',a?'true':'false');
+    tabB.setAttribute('aria-selected',a?'false':'true');
+    try{ history.replaceState(null,'',a?'#walk':'#north'); }catch(e){}
     window.scrollTo(0,0);
   }
-  tabA.addEventListener('click', function(){ show('A'); });
-  tabB.addEventListener('click', function(){ show('B'); });
-  if((location.hash||'').toLowerCase().indexOf('north')>-1){ show('B'); }
+  tabA.addEventListener('click',function(){show('A');});
+  tabB.addEventListener('click',function(){show('B');});
+  if((location.hash||'').toLowerCase().indexOf('north')>-1){show('B');}
+  // failsafe
+  window.setTimeout(function(){
+    var hidden=document.querySelectorAll('#docA .rv:not(.in), #docB .rv:not(.in)');
+    if(hidden.length && !document.querySelector('.rv.in')){ document.body.classList.add('nojs'); }
+  },2000);
 })();
 </script>
-<script>(function(){var ROOT = document.getElementById('docA');
-
-(function(){
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+<script>(function(){try{
+var ROOT = document.getElementById('docA');
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Reveal on scroll
   var io = new IntersectionObserver(function(entries){
@@ -1659,11 +1653,11 @@ body.showB #docB{display:block}
     if(!ticking){ window.requestAnimationFrame(update); ticking = true; }
   }, {passive:true});
   window.addEventListener('resize', update);
-  update();})();</script>
-<script>(function(){var ROOT = document.getElementById('docB');
-
-(function(){
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  update();
+}catch(err){console.error('reveal failed:',err);document.querySelectorAll('#docA .rv').forEach(function(el){el.classList.add('in');});document.querySelectorAll('#docA .stop, #docA .card').forEach(function(el){el.classList.add('mplay','lit');});}})();</script>
+<script>(function(){try{
+var ROOT = document.getElementById('docB');
+var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(e){
       if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
@@ -1681,6 +1675,7 @@ body.showB #docB{display:block}
       entries.forEach(function(e){ e.target.classList.toggle('mplay', e.isIntersecting); });
     }, {threshold:0.02});
     ROOT.querySelectorAll('.card').forEach(function(el){ mo.observe(el); });
-  }})();</script>
+  }
+}catch(err){console.error('reveal failed:',err);document.querySelectorAll('#docB .rv').forEach(function(el){el.classList.add('in');});document.querySelectorAll('#docB .stop, #docB .card').forEach(function(el){el.classList.add('mplay','lit');});}})();</script>
 </body>
 </html>
