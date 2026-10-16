@@ -1,0 +1,7 @@
+# build outputs and downloaded tools
+build/
+.tools/
+# signing keys never go in git
+keystore/
+*.p12
+*.jks
