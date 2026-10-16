@@ -105,6 +105,7 @@ public class MainActivity extends Activity {
         if (p.endsWith(".png")) return "image/png";
         if (p.endsWith(".svg")) return "image/svg+xml";
         if (p.endsWith(".json")) return "application/json";
+        if (p.endsWith(".webmanifest")) return "application/manifest+json";
         return "application/octet-stream";
     }
 

@@ -1,6 +1,6 @@
 // Renders the launcher icons from the game's own Hummer sprite.
 // Usage: serve car-crasher/www on http://localhost:8765, then: node make-icons.js
-// Needs Playwright (Chromium). Writes PNGs into ../res/mipmap-*/.
+// Needs Playwright (Chromium). Writes PNGs into ../res/mipmap-*/ and ../../www/icons/.
 const path = require('path');
 const fs = require('fs');
 const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
@@ -19,7 +19,8 @@ const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
         const c = document.createElement('canvas');
         c.width = c.height = size;
         const g = c.getContext('2d');
-        const full = mode !== 'fg';
+        const full = mode === 'legacy' || mode === 'round';
+        if (mode === 'maskable') { g.fillStyle = '#14161a'; g.fillRect(0, 0, size, size); }
         if (full) {
           g.save();
           if (mode === 'round') { g.beginPath(); g.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2); g.clip(); }
@@ -57,6 +58,7 @@ const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
         g.restore();
         return c.toDataURL('image/png');
       };
+      window.__jcIcon = make;
       return {
         legacy: make(Math.round(48 * k), 'legacy'),
         round: make(Math.round(48 * k), 'round'),
@@ -70,6 +72,17 @@ const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
     save('ic_launcher_round.png', out.round);
     save('ic_launcher_foreground.png', out.fg);
   }
+  // Web app (PWA) icons for installing from the browser.
+  const web = await page.evaluate(() => {
+    const draw = window.__jcIcon;
+    return { a192: draw(192, 'legacy'), a512: draw(512, 'legacy'), m512: draw(512, 'maskable') };
+  });
+  const webDir = path.join(__dirname, '..', '..', 'www', 'icons');
+  fs.mkdirSync(webDir, { recursive: true });
+  const saveWeb = (name, url) => fs.writeFileSync(path.join(webDir, name), Buffer.from(url.split(',')[1], 'base64'));
+  saveWeb('icon-192.png', web.a192);
+  saveWeb('icon-512.png', web.a512);
+  saveWeb('icon-maskable-512.png', web.m512);
   // a large copy for the README / store listing
   await browser.close();
   console.log('icons written to', RES);

@@ -13,6 +13,21 @@ from bombs and dynamite.
 Play Protect may show a "scan app" prompt because the app isn't from the Play Store; that's normal
 for sideloaded apps.
 
+## Install on a computer (or any phone) as an app
+
+The `www/` folder is an installable web app: it has its own icon and window, and it works offline
+after the first load. Once GitHub Pages serves this repository, open
+
+**https://jatinchadha7.github.io/fs-the-walk/car-crasher/www/**
+
+in Chrome or Edge and click the install icon at the right of the address bar (or menu →
+*Cast, save and share* → *Install page as app* in Chrome; *Apps* → *Install this site as an app*
+in Edge). On a Mac with Safari: *File* → *Add to Dock*. On a phone: *Add to Home screen*.
+
+To turn Pages on: repository **Settings → Pages → Build and deployment**, source *Deploy from a
+branch*, branch `main`, folder `/ (root)`. The game appears at that address once this folder is
+on `main`.
+
 ## How to play
 
 - **Swipe or tap** left or right to change lanes (arrow keys or A/D on a keyboard).
@@ -35,7 +50,7 @@ for sideloaded apps.
 - Day turns to night and back at random. At night every car, bomb and stick of dynamite glows
   neon, and the Hummer's headlights and underglow light up the road.
 
-## Play in a browser
+## Play in a browser without installing
 
 Open `www/index.html` through any local web server, for example:
 
@@ -71,6 +86,7 @@ car-crasher/
 ├── JC-Car-Crasher.apk        ready-to-install build
 ├── www/                      the game (HTML5 canvas, no libraries, works offline)
 │   ├── index.html, css/game.css, fonts/   (Bungee, Overpass, Overpass Mono — SIL OFL)
+│   ├── manifest.webmanifest, sw.js, icons/   install-as-app support and offline cache
 │   └── js/
 │       ├── util.js           maths, seeded random, sprite cache
 │       ├── vehicles.js       Hummer, traffic, bombs, dynamite, pick-ups (day + neon looks)
