@@ -19,8 +19,8 @@ TOOLS="${TOOLS_DIR:-$HERE/.tools}"
 OUT_APK="${OUT_APK:-$GAME/JC-Car-Crasher.apk}"
 MIRRORS=("${MAVEN_MIRROR:-https://maven-central.storage-download.googleapis.com/maven2}" "https://repo1.maven.org/maven2")
 
-VERSION_CODE="${VERSION_CODE:-1}"
-VERSION_NAME="${VERSION_NAME:-1.0}"
+VERSION_CODE="${VERSION_CODE:-2}"
+VERSION_NAME="${VERSION_NAME:-1.1}"
 KEYSTORE="${KEYSTORE:-$HERE/keystore/jc-release.p12}"
 KEYSTORE_PASS="${KEYSTORE_PASS:-jc-car-crasher}"
 KEY_ALIAS="${KEY_ALIAS:-jc}"

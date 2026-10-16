@@ -45,14 +45,14 @@ const DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 };
         }
         g.closePath(); g.fill();
         // the truck itself, rendered crisply at this size
-        const truckH = full ? size * 0.78 : size * 0.56;
+        const truckH = full ? size * 0.84 : size * 0.6;
         JC.R.scale = truckH / JC.HUMMER.h * 1.1;
         JC.cache.clear();
         const hs = JC.hummerSprites().day;
         const sc = truckH / JC.HUMMER.h;
         g.save();
         g.translate(cx, cy);
-        g.rotate(-0.21);
+        g.rotate(-0.14);
         g.shadowColor = 'rgba(0,0,0,0.55)'; g.shadowBlur = size * 0.05; g.shadowOffsetY = size * 0.02;
         g.drawImage(hs.c, -hs.w * sc / 2, -hs.h * sc / 2, hs.w * sc, hs.h * sc);
         g.restore();

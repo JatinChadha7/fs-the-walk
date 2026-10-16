@@ -383,12 +383,16 @@
     // JC lettering
     g.save();
     g.translate(w / 2, roofY + roofH / 2 + 2);
-    g.font = `26px ${JC.FONT_DISPLAY}`;
+    // as big as the body allows: the letters span the whole roof, rails included
+    let jcSize = 40;
+    g.font = `${jcSize}px ${JC.FONT_DISPLAY}`;
+    while (g.measureText('JC').width > bw + 2 && jcSize > 20) { jcSize--; g.font = `${jcSize}px ${JC.FONT_DISPLAY}`; }
     g.textAlign = 'center'; g.textBaseline = 'middle';
     if (neon) glow(g, gold, 14);
-    const tg = g.createLinearGradient(0, -12, 0, 12);
+    const tg = g.createLinearGradient(0, -jcSize * 0.45, 0, jcSize * 0.45);
     tg.addColorStop(0, '#fff2b3'); tg.addColorStop(0.45, gold); tg.addColorStop(1, '#b07a12');
-    g.lineWidth = 2.5; g.strokeStyle = '#000'; g.strokeText('JC', 0, 0);
+    g.lineJoin = 'round';
+    g.lineWidth = 3.2; g.strokeStyle = '#000'; g.strokeText('JC', 0, 0);
     g.fillStyle = tg; g.fillText('JC', 0, 0);
     if (neon) g.fillText('JC', 0, 0);
     g.restore();
