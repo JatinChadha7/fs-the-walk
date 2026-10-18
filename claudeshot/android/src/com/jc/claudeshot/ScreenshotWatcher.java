@@ -41,8 +41,10 @@ final class ScreenshotWatcher extends ContentObserver {
     private static final long SETTLE_MS = 150;
     // Only screenshots this fresh count; older pictures can be touched by other apps any time.
     private static final long MAX_AGE_S = 20;
-    // Taller than this is a scrolling ("long") screenshot; those stay with the phone's own editor.
-    private static final int MAX_SIDE = 4096;
+    // Long (scrolling) screenshots are welcome; past this many pixels they are shrunk by half, then
+    // half again, to keep memory in check. Very wide pictures (tablets, desktops) likewise.
+    private static final long MAX_PIXELS = 24_000_000L;
+    private static final int MAX_WIDTH = 4096;
     private static final Uri IMAGES = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 
     private final Context context;
@@ -167,9 +169,14 @@ final class ScreenshotWatcher extends ContentObserver {
                 BitmapFactory.decodeStream(in, null, bounds);
             }
             if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null;
-            if (bounds.outWidth > MAX_SIDE || bounds.outHeight > MAX_SIDE) return null;
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = 1;
+            while ((long) (bounds.outWidth / opts.inSampleSize) * (bounds.outHeight / opts.inSampleSize) > MAX_PIXELS
+                    || bounds.outWidth / opts.inSampleSize > MAX_WIDTH) {
+                opts.inSampleSize *= 2;
+            }
             try (InputStream in = resolver.openInputStream(uri)) {
-                return BitmapFactory.decodeStream(in);
+                return BitmapFactory.decodeStream(in, null, opts);
             }
         } catch (Exception | OutOfMemoryError e) {
             Log.w(TAG, "decode", e);

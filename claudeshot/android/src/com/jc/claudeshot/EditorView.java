@@ -17,13 +17,18 @@ import android.view.View;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Shows a screenshot and lets the user mark it up, blur parts of it and crop it.
  *
  * Marks are kept as shapes in screenshot pixels and drawn on top of the image, so undo just drops
  * the last shape. Cropping flattens the marks into a new, smaller image.
+ *
+ * One finger draws; two fingers zoom and scroll. Long (scrolling) screenshots open fitted to the
+ * width, top first, and are drawn in strips because a phone's GPU can't draw one very tall bitmap.
  */
 public final class EditorView extends View {
     static final int PEN = 0;
@@ -56,6 +61,13 @@ public final class EditorView extends View {
     private static final int GRAB_BOTTOM = 8;
     private static final int GRAB_MOVE = 16;
 
+    // Taller than this many times its width: a long screenshot, opened fitted to the width.
+    private static final float TALL_RATIO = 3f;
+    // Bitmaps bigger than this on either side are drawn in strips of TILE_PX rows.
+    private static final int MAX_WHOLE_PX = 4096;
+    private static final int TILE_PX = 1024;
+    private static final int MAX_TILES = 8;
+
     private final float dp;
     private final Matrix toView = new Matrix();
     private final Matrix toImage = new Matrix();
@@ -67,7 +79,18 @@ public final class EditorView extends View {
     private final Paint cropLine = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint cropGuide = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint cropHandle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private float scale = 1f;
+    private final Paint scrollbar = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private float scale = 1f; // view pixels per screenshot pixel
+    private float minScale = 1f;
+    private float maxScale = 4f;
+    private float offsetX; // where the screenshot's top-left corner is in the view
+    private float offsetY;
+    private final LinkedHashMap<Integer, Bitmap> tiles = new LinkedHashMap<Integer, Bitmap>(16, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, Bitmap> eldest) {
+            return size() > MAX_TILES;
+        }
+    };
 
     private Bitmap image;
     private float unit = 1f;
@@ -87,7 +110,15 @@ public final class EditorView extends View {
     private float lastViewX;
     private float lastViewY;
     private float travel;
-    private boolean ignoreGesture;
+
+    // two-finger zoom and scroll
+    private boolean navigating;
+    private float navCx;
+    private float navCy;
+    private float navSpan;
+    private float navScale;
+    private float navOffX;
+    private float navOffY;
 
     private boolean cropping;
     private final RectF crop = new RectF();
@@ -114,6 +145,10 @@ public final class EditorView extends View {
         cropHandle.setStrokeWidth(4 * dp);
         cropHandle.setStrokeCap(Paint.Cap.ROUND);
         cropHandle.setColor(Color.WHITE);
+        scrollbar.setStyle(Paint.Style.STROKE);
+        scrollbar.setStrokeCap(Paint.Cap.ROUND);
+        scrollbar.setStrokeWidth(3 * dp);
+        scrollbar.setColor(0x80FFFFFF);
         setContentDescription(context.getString(R.string.clip_label));
     }
 
@@ -129,7 +164,7 @@ public final class EditorView extends View {
         shapes.clear();
         undoStack.clear();
         redoStack.clear();
-        updateMatrix();
+        resetView();
         invalidate();
     }
 
@@ -183,7 +218,7 @@ public final class EditorView extends View {
             image = e.before;
             shapes.clear();
             shapes.addAll(e.shapesBefore);
-            updateMatrix();
+            resetView();
         }
         redoStack.push(e);
         changed();
@@ -197,7 +232,7 @@ public final class EditorView extends View {
         } else {
             image = e.after;
             shapes.clear();
-            updateMatrix();
+            resetView();
         }
         undoStack.push(e);
         changed();
@@ -264,7 +299,7 @@ public final class EditorView extends View {
         Edit edit = new Edit(image, new ArrayList<>(shapes), cut);
         image = cut;
         shapes.clear();
-        updateMatrix();
+        resetView();
         undoStack.push(edit);
         redoStack.clear();
         changed();
@@ -291,24 +326,45 @@ public final class EditorView extends View {
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        updateMatrix();
+        resetView();
     }
 
-    private void updateMatrix() {
+    /** A long (scrolling) screenshot: opened fitted to the width and scrolled with two fingers. */
+    boolean isTall() {
+        return image != null && image.getHeight() > TALL_RATIO * image.getWidth();
+    }
+
+    /** Shows the whole screenshot, or for a long one the full width from the top. */
+    private void resetView() {
+        tiles.clear();
         if (image == null || getWidth() == 0 || getHeight() == 0) return;
         float pad = 14 * dp;
-        float availW = getWidth() - 2 * pad;
-        float availH = getHeight() - 2 * pad;
-        scale = Math.min(availW / image.getWidth(), availH / image.getHeight());
-        float w = image.getWidth() * scale;
-        float h = image.getHeight() * scale;
-        float left = (getWidth() - w) / 2f;
-        float top = (getHeight() - h) / 2f;
+        float fitWhole = Math.min((getWidth() - 2 * pad) / image.getWidth(), (getHeight() - 2 * pad) / image.getHeight());
+        float fitWidth = (getWidth() - 2 * pad) / image.getWidth();
+        minScale = fitWhole;
+        maxScale = Math.max(fitWhole, fitWidth) * 5f;
+        scale = isTall() ? fitWidth : fitWhole;
+        offsetX = (getWidth() - image.getWidth() * scale) / 2f;
+        offsetY = isTall() ? pad : (getHeight() - image.getHeight() * scale) / 2f;
+        applyView();
+    }
+
+    private void applyView() {
+        float pad = 14 * dp;
+        offsetX = clampAxis(offsetX, image.getWidth() * scale, getWidth(), pad);
+        offsetY = clampAxis(offsetY, image.getHeight() * scale, getHeight(), pad);
         toView.setScale(scale, scale);
-        toView.postTranslate(left, top);
+        toView.postTranslate(offsetX, offsetY);
         toView.invert(toImage);
-        imageInView.set(left, top, left + w, top + h);
+        imageInView.set(offsetX, offsetY, offsetX + image.getWidth() * scale, offsetY + image.getHeight() * scale);
         if (cropping) updateExclusion();
+        invalidate();
+    }
+
+    /** Centred while it fits; once bigger than the view, its edges can't come inside the padding. */
+    private static float clampAxis(float offset, float content, float view, float pad) {
+        if (content <= view - 2 * pad) return (view - content) / 2f;
+        return Math.max(view - pad - content, Math.min(pad, offset));
     }
 
     @Override
@@ -320,11 +376,46 @@ public final class EditorView extends View {
         int save = canvas.save();
         canvas.concat(toView);
         canvas.clipRect(0, 0, image.getWidth(), image.getHeight());
-        canvas.drawBitmap(image, 0, 0, bitmapPaint);
+        if (image.getWidth() <= MAX_WHOLE_PX && image.getHeight() <= MAX_WHOLE_PX) {
+            canvas.drawBitmap(image, 0, 0, bitmapPaint);
+        } else {
+            drawTiles(canvas);
+        }
         for (Shape s : shapes) s.draw(canvas);
         if (drawing != null) drawing.draw(canvas);
         canvas.restoreToCount(save);
         if (cropping) drawCrop(canvas);
+        drawScrollbar(canvas);
+    }
+
+    /** Draws only the strips of a big screenshot that are on screen, cutting them as needed. */
+    private void drawTiles(Canvas canvas) {
+        float top = -offsetY / scale;
+        float bottom = (getHeight() - offsetY) / scale;
+        int first = Math.max(0, (int) (top / TILE_PX));
+        int last = Math.min((image.getHeight() - 1) / TILE_PX, (int) (bottom / TILE_PX));
+        for (int i = first; i <= last; i++) {
+            Bitmap strip = tiles.get(i);
+            if (strip == null) {
+                int y = i * TILE_PX;
+                strip = Bitmap.createBitmap(image, 0, y, image.getWidth(), Math.min(TILE_PX, image.getHeight() - y));
+                tiles.put(i, strip);
+            }
+            canvas.drawBitmap(strip, 0, i * TILE_PX, bitmapPaint);
+        }
+    }
+
+    /** A thin bar on the right showing where you are, while the screenshot is taller than the view. */
+    private void drawScrollbar(Canvas canvas) {
+        float pad = 14 * dp;
+        float track = getHeight() - 2 * pad;
+        float content = image.getHeight() * scale;
+        if (content <= track + 1) return;
+        float thumb = Math.max(32 * dp, track * track / content);
+        float progress = clamp((pad - offsetY) / (content - track), 0, 1);
+        float y = pad + progress * (track - thumb);
+        float x = getWidth() - 4 * dp;
+        canvas.drawLine(x, y, x, y + thumb, scrollbar);
     }
 
     private void drawCrop(Canvas canvas) {
@@ -368,10 +459,10 @@ public final class EditorView extends View {
     @Override
     public boolean onTouchEvent(MotionEvent e) {
         if (image == null) return false;
+        if (navigate(e)) return true;
         if (cropping) return onCropTouch(e);
         switch (e.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                ignoreGesture = false;
                 travel = 0;
                 lastViewX = e.getX();
                 lastViewY = e.getY();
@@ -379,23 +470,14 @@ public final class EditorView extends View {
                 begin(point[0], point[1]);
                 invalidate();
                 return true;
-            case MotionEvent.ACTION_POINTER_DOWN:
-                // A second finger: drop the half-drawn mark rather than guess what was meant.
-                ignoreGesture = true;
-                drawing = null;
-                invalidate();
-                return true;
             case MotionEvent.ACTION_MOVE:
-                if (ignoreGesture) return true;
                 for (int i = 0; i < e.getHistorySize(); i++) move(e.getHistoricalX(i), e.getHistoricalY(i));
                 move(e.getX(), e.getY());
                 invalidate();
                 return true;
             case MotionEvent.ACTION_UP:
-                if (!ignoreGesture) {
-                    move(e.getX(), e.getY());
-                    finish();
-                }
+                move(e.getX(), e.getY());
+                finish();
                 drawing = null;
                 invalidate();
                 return true;
@@ -406,6 +488,90 @@ public final class EditorView extends View {
             default:
                 return true;
         }
+    }
+
+    /**
+     * Two fingers zoom (pinch) and scroll (drag) in any tool. A second finger drops whatever the
+     * first one had started; the gesture then stays a zoom/scroll until every finger is up.
+     * Returns true for events it used.
+     */
+    private boolean navigate(MotionEvent e) {
+        switch (e.getActionMasked()) {
+            case MotionEvent.ACTION_DOWN:
+                navigating = false;
+                return false;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                if (!navigating) {
+                    navigating = true;
+                    drawing = null;
+                    cropGrab = 0;
+                }
+                startNavigation(e, -1);
+                return true;
+            case MotionEvent.ACTION_POINTER_UP:
+                if (navigating) startNavigation(e, e.getActionIndex());
+                return navigating;
+            case MotionEvent.ACTION_MOVE:
+                if (!navigating) return false;
+                float[] now = centre(e, -1);
+                float newScale = navSpan > 0 && now[2] > 0
+                        ? clamp(navScale * now[2] / navSpan, minScale, maxScale) : scale;
+                // Keep the screenshot point that was under the fingers under them.
+                float ix = (navCx - navOffX) / navScale;
+                float iy = (navCy - navOffY) / navScale;
+                scale = newScale;
+                offsetX = now[0] - ix * newScale;
+                offsetY = now[1] - iy * newScale;
+                applyView();
+                // Restart from here, so clamping at an edge doesn't build up a jump.
+                navCx = now[0];
+                navCy = now[1];
+                navSpan = now[2];
+                navScale = scale;
+                navOffX = offsetX;
+                navOffY = offsetY;
+                return true;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                if (!navigating) return false;
+                navigating = false;
+                invalidate();
+                return true;
+            default:
+                return navigating;
+        }
+    }
+
+    private void startNavigation(MotionEvent e, int skip) {
+        float[] c = centre(e, skip);
+        navCx = c[0];
+        navCy = c[1];
+        navSpan = c[2];
+        navScale = scale;
+        navOffX = offsetX;
+        navOffY = offsetY;
+    }
+
+    /** Centre of the fingers and their average distance from it, leaving out pointer {@code skip}. */
+    private static float[] centre(MotionEvent e, int skip) {
+        float sx = 0;
+        float sy = 0;
+        int n = 0;
+        for (int i = 0; i < e.getPointerCount(); i++) {
+            if (i == skip) continue;
+            sx += e.getX(i);
+            sy += e.getY(i);
+            n++;
+        }
+        if (n == 0) return new float[] {0, 0, 0};
+        float cx = sx / n;
+        float cy = sy / n;
+        float span = 0;
+        for (int i = 0; i < e.getPointerCount(); i++) {
+            if (i == skip) continue;
+            span += (float) Math.hypot(e.getX(i) - cx, e.getY(i) - cy);
+        }
+        return new float[] {cx, cy, n > 1 ? span / n : 0};
     }
 
     private void begin(float x, float y) {

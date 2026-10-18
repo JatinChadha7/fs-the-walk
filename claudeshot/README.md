@@ -30,6 +30,8 @@ for apps you install yourself.
 - **Editor tools:** Pen, Marker (highlighter), Arrow, Box, Text, **Blur** (hide account numbers,
   OTPs, faces…) and Crop. Eight colours and three line sizes. Undo and redo everything, crop
   included.
+- **Two fingers** zoom in and move around; one finger draws. Long screenshots open fitted to the
+  width, with a scroll bar on the right: scroll through them with two fingers.
 - **Top bar:** Copy (paste into any app), Save (to *Pictures/ClaudeShot* in your gallery) and Share.
 - **Button style:** seven colours, five icons (viewfinder, camera, scissors, pencil, or your own one
   or two letters, such as *JC*), a size slider (from tiny to large), and what it does when not in use: stay solid, fade, or
@@ -53,8 +55,13 @@ few seconds and only save the screenshot when it goes away; swiping the thumbnai
 straight away, and ClaudeShot opens right after.
 
 This needs access to your photos, so ClaudeShot can see the new screenshot. On Android 14 and
-newer choose **Allow all**: with "selected photos only" it can't see new screenshots. Scrolling
-("long") screenshots stay with the phone's own editor.
+newer choose **Allow all**: with "selected photos only" it can't see new screenshots.
+
+**Scrolling (long) screenshots.** Press Power + Volume down as usual, then tap **Scroll** (or
+*Capture more*) on your phone's preview and let it scroll down the page. When the phone has saved
+the long screenshot, it opens in ClaudeShot like any other. Very long ones (more than about nine
+screens) open at half resolution so they fit in memory. The floating button can't scroll other
+apps, so its screenshots are always one screen.
 
 ### Good to know
 

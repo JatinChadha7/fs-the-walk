@@ -125,6 +125,7 @@ public class EditorActivity extends Activity implements EditorView.Listener {
 
         editor.setImage(shot);
         editor.setListener(this);
+        if (editor.isTall()) Toast.makeText(this, R.string.tall_hint, Toast.LENGTH_LONG).show();
         int tool = prefs.getInt(Prefs.TOOL, EditorView.PEN);
         editor.setTool(tool == EditorView.CROP ? EditorView.PEN : tool);
         editor.setColor(prefs.getInt(Prefs.COLOR, COLORS[0]));

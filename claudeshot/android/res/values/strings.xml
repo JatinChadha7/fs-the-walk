@@ -49,6 +49,7 @@
 
     <string name="watch_title">Phone screenshot buttons</string>
     <string name="watch_body">Android keeps Power + Volume down for itself, so no app can take those keys over. Turn this on and every screenshot you take with them opens straight in the ClaudeShot editor. Your phone still saves the original to its Screenshots album.</string>
+    <string name="watch_scroll">For a long screenshot of a whole page, tap Scroll on your phone’s preview. When your phone has finished, the long screenshot opens here too.</string>
     <string name="watch_tip">The floating button shows up in screenshots taken with the phone buttons. Pick “Tuck in” above, or turn the button off, if that bothers you.</string>
     <string name="watch_needs_photos">ClaudeShot needs access to your photos to see new screenshots. Turn this on again, or allow Photos in App info.</string>
     <string name="watch_partial">You allowed only some photos. To catch new screenshots, open App info → Permissions → Photos and videos, and choose “Allow all”.</string>
@@ -60,6 +61,7 @@
     <string name="howto_2">Mark it up with Pen, Marker, Arrow, Box and Text. Use Blur to hide private details and Crop to keep just the part you need.</string>
     <string name="howto_3">Copy, Save or Share from the top bar. Saved screenshots go to Pictures/ClaudeShot in your gallery.</string>
     <string name="howto_4">Drag the button to move it. Drag it onto ✕ at the bottom to turn it off.</string>
+    <string name="howto_6">Use two fingers to zoom in or to scroll through a long screenshot. One finger draws.</string>
     <string name="howto_5">Prefer Power + Volume down? Turn on Phone screenshot buttons and those screenshots open here too.</string>
     <string name="battery_title">Button disappears by itself?</string>
     <string name="battery_body">Some phones close apps that run in the background. In App info, open Battery and choose “Unrestricted” or “Allow background activity”. ClaudeShot turns itself back on after a restart.</string>
@@ -112,6 +114,7 @@
     <string name="export_failed">Couldn’t save the image. Try again.</string>
     <string name="share_title">Share screenshot</string>
     <string name="clip_label">Screenshot</string>
+    <string name="tall_hint">Long screenshot: use two fingers to scroll and zoom.</string>
     <string name="shot_missing">This screenshot is no longer available.</string>
     <string name="discard_title">Discard this screenshot?</string>
     <string name="discard_body">You haven’t saved, copied or shared it yet.</string>

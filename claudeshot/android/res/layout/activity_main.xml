@@ -219,6 +219,11 @@
             <TextView style="@style/CardBody" android:text="@string/watch_body" />
 
             <TextView
+                style="@style/CardBody"
+                android:layout_marginTop="10dp"
+                android:text="@string/watch_scroll" />
+
+            <TextView
                 android:id="@+id/watch_hint"
                 style="@style/CardBody"
                 android:layout_marginTop="10dp"
@@ -281,6 +286,7 @@
             <TextView style="@style/Bullet" android:text="@string/howto_3" />
             <TextView style="@style/Bullet" android:text="@string/howto_4" />
             <TextView style="@style/Bullet" android:text="@string/howto_5" />
+            <TextView style="@style/Bullet" android:text="@string/howto_6" />
         </LinearLayout>
 
         <!-- Battery tip -->
