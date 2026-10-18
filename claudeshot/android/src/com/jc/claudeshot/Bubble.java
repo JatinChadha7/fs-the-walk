@@ -162,6 +162,11 @@ final class Bubble {
         view.setHidden(hidden);
     }
 
+    /** Redraws the (hidden) button so Android composes a fresh frame of the screen. */
+    void poke() {
+        view.poke();
+    }
+
     void onScreenChanged() {
         if (!shown || dragging) return;
         if (slide != null) slide.cancel();

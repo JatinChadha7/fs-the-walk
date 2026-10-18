@@ -25,6 +25,8 @@ final class BubbleView extends View {
     private BubbleStyle style;
     private Drawable icon;
     private boolean hidden;
+    private boolean poked;
+    private final Paint pokePaint = new Paint();
 
     BubbleView(Context context, float margin) {
         super(context);
@@ -48,6 +50,15 @@ final class BubbleView extends View {
         text.setColor(style.iconColor());
         ring.setColor(style.lightButton() ? 0x1F000000 : 0x4DFFFFFF);
         updateShaders();
+        invalidate();
+    }
+
+    /**
+     * Changes one pixel by a single step of transparency, invisible to the eye: enough for Android
+     * to draw and compose a new frame. Used while the button is hidden for a screenshot.
+     */
+    void poke() {
+        poked = !poked;
         invalidate();
     }
 
@@ -82,7 +93,13 @@ final class BubbleView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (hidden) return;
+        if (hidden) {
+            if (poked) {
+                pokePaint.setColor(0x01000000);
+                canvas.drawRect(0, 0, 1, 1, pokePaint);
+            }
+            return;
+        }
         float cx = getWidth() / 2f;
         float cy = getHeight() / 2f;
         float button = Math.min(cx, cy) - margin;

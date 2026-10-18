@@ -80,6 +80,7 @@
     <string name="bubble_description">Take a screenshot</string>
     <string name="bubble_stopped">ClaudeShot is off. Open the app to turn it back on.</string>
     <string name="bubble_off_watching">Floating button is off. Screenshots from your phone buttons still open in ClaudeShot.</string>
+    <string name="capture_blank">The screenshot came out black. Some apps block screenshots. Otherwise, tap the button again.</string>
     <string name="capture_failed">Couldn’t take the screenshot. Try again.</string>
     <string name="capture_refused">ClaudeShot needs screen capture to take screenshots. Tap the button and choose “Start now”.</string>
 

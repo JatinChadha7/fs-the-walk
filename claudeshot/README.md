@@ -54,7 +54,9 @@ newer choose **Allow all**: with "selected photos only" it can't see new screens
   icon in the status bar. Newer Android versions ask for permission again after you lock the
   phone. Turn the setting off if you'd rather be asked before every screenshot instead.
 - **Black screenshots.** Banking and video apps block screenshots, so those come out black,
-  the same as with the phone's own screenshot button.
+  the same as with the phone's own screenshot button. Right after you allow screen capture, some
+  phones send black frames for a moment; ClaudeShot waits for a real one (up to about four
+  seconds), so the first screenshot can take a little longer.
 - **The floating button appears in phone-button screenshots**, because it's on screen when the
   phone takes them. Choose *Tuck in*, or turn the floating button off if you only use the keys.
 - **Button disappears by itself?** Some phones close background apps. In App info → Battery,

@@ -47,7 +47,7 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
     // ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE, added in API 34 (the app compiles against 30).
     private static final int FGS_TYPE_SPECIAL_USE = 1 << 30;
     // Lets the "start screen capture?" prompt animate away before the first screenshot.
-    private static final long AFTER_CONSENT_MS = 600;
+    private static final long AFTER_CONSENT_MS = 900;
     // If the editor hasn't picked the screenshot up by then, it probably wasn't allowed to open.
     private static final long EDITOR_CHECK_MS = 2500;
     private static final long CONSENT_TIMEOUT_MS = 60_000;
@@ -274,13 +274,19 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
         // guaranteed to reach the reader.
         grabber.grab(new ScreenGrabber.Callback() {
             @Override
-            public void onShot(Bitmap shot) {
+            public void onShot(Bitmap shot, boolean blank) {
                 onCaptured(shot);
+                if (blank) Toast.makeText(BubbleService.this, R.string.capture_blank, Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onFailed() {
                 onCaptured(null);
+            }
+        }, new Runnable() {
+            @Override
+            public void run() {
+                if (bubble != null) bubble.poke();
             }
         });
         bubble.setCaptureHidden(true);
