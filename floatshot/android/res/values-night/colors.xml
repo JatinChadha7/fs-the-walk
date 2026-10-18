@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="accent">#A18BFF</color>
+    <color name="on_accent">#16112E</color>
+    <color name="bg">#0F0E14</color>
+    <color name="card">#1A1922</color>
+    <color name="text">#F1F0F6</color>
+    <color name="text2">#A8A6B4</color>
+    <color name="outline">#34323F</color>
+    <color name="disabled_bg">#2A2833</color>
+    <color name="disabled_text">#6E6C7A</color>
+    <color name="chip_ok_bg">#163724</color>
+    <color name="chip_ok_text">#7EE0A1</color>
+    <color name="chip_wait_bg">#3A2B10</color>
+    <color name="chip_wait_text">#F5C46B</color>
+    <color name="chip_off_bg">#2A2833</color>
+    <color name="chip_off_text">#A8A6B4</color>
+</resources>

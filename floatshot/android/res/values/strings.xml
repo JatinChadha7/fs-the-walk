@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FloatShot</string>
+    <string name="editor_label">FloatShot editor</string>
+    <string name="tagline">A floating button that takes a screenshot, lets you mark it up and shares it.</string>
+
+    <!-- Setup screen -->
+    <string name="status_done">Done</string>
+    <string name="status_needed">Needed</string>
+    <string name="status_on">On</string>
+    <string name="status_off">Off</string>
+    <string name="step1_title">1 · Allow the floating button</string>
+    <string name="step1_body">FloatShot needs to display over other apps so its button can float on every screen. In the list that opens, pick FloatShot and turn on “Allow display over other apps”.</string>
+    <string name="step1_done">FloatShot can display over other apps.</string>
+    <string name="step1_button">Allow display over other apps</string>
+    <string name="restricted_hint">If Android says it’s a restricted setting: open App info, tap ⋮ at the top right, choose “Allow restricted settings”, then try again.</string>
+    <string name="open_app_info">Open App info</string>
+    <string name="step2_title">2 · Floating button</string>
+    <string name="step2_locked">Finish step 1 first.</string>
+    <string name="step2_off">Start it, then tap it on any screen to take a screenshot. The first time, Android asks you to allow screen capture. Tap “Start now”.</string>
+    <string name="step2_on">The button is on. Tap it on any screen to take a screenshot.</string>
+    <string name="start_bubble">Start floating button</string>
+    <string name="stop_bubble">Stop floating button</string>
+    <string name="bubble_started">FloatShot is on. Tap the floating button on any screen.</string>
+    <string name="keep_ready_title">Keep screen capture ready</string>
+    <string name="keep_ready_body">On: screenshots are instant after you allow screen capture once. Android shows a screen-sharing icon while the button is on, and asks again after you lock your phone. Off: Android asks before every screenshot.</string>
+    <string name="howto_title">How to use</string>
+    <string name="howto_1">Tap the floating button to take a screenshot. It opens in the editor.</string>
+    <string name="howto_2">Mark it up with Pen, Marker, Arrow, Box and Text. Use Blur to hide private details and Crop to keep just the part you need.</string>
+    <string name="howto_3">Copy, Save or Share from the top bar. Saved screenshots go to Pictures/FloatShot in your gallery.</string>
+    <string name="howto_4">Drag the button to move it. Drag it onto ✕ at the bottom to turn it off.</string>
+    <string name="battery_title">Button disappears by itself?</string>
+    <string name="battery_body">Some phones close apps that run in the background. In App info, open Battery and choose “Unrestricted” or “Allow background activity”.</string>
+    <string name="privacy">Your screenshots stay on your phone unless you share them. FloatShot has no internet access.</string>
+    <string name="start_failed">Couldn’t start the floating button. Try again.</string>
+
+    <!-- Floating button service -->
+    <string name="notif_channel">Floating button</string>
+    <string name="notif_title">FloatShot is on</string>
+    <string name="notif_text">Tap the floating button to take a screenshot.</string>
+    <string name="notif_stop">Stop</string>
+    <string name="shots_channel">Screenshots</string>
+    <string name="shot_ready_title">Screenshot taken</string>
+    <string name="shot_ready_text">Tap to edit and share it.</string>
+    <string name="bubble_description">Take a screenshot</string>
+    <string name="bubble_stopped">FloatShot is off. Open the app to turn it back on.</string>
+    <string name="no_overlay">Allow FloatShot to display over other apps first.</string>
+    <string name="capture_failed">Couldn’t take the screenshot. Try again.</string>
+    <string name="capture_refused">FloatShot needs screen capture to take screenshots. Tap the button and choose “Start now”.</string>
+
+    <!-- Editor -->
+    <string name="close">Close</string>
+    <string name="undo">Undo</string>
+    <string name="redo">Redo</string>
+    <string name="copy">Copy</string>
+    <string name="save">Save</string>
+    <string name="share">Share</string>
+    <string name="cancel">Cancel</string>
+    <string name="tool_pen">Pen</string>
+    <string name="tool_marker">Marker</string>
+    <string name="tool_arrow">Arrow</string>
+    <string name="tool_box">Box</string>
+    <string name="tool_text">Text</string>
+    <string name="tool_blur">Blur</string>
+    <string name="tool_crop">Crop</string>
+    <string name="size_small">Line size: small</string>
+    <string name="size_medium">Line size: medium</string>
+    <string name="size_large">Line size: large</string>
+    <string name="color_label">Colour %1$d</string>
+    <string name="crop_hint">Drag the edges or corners</string>
+    <string name="crop_apply">Crop</string>
+    <string name="text_title">Add text</string>
+    <string name="text_hint">Type here</string>
+    <string name="text_add">Add</string>
+    <string name="saved">Saved to Pictures/FloatShot</string>
+    <string name="copied">Copied. Paste it into any app.</string>
+    <string name="export_failed">Couldn’t save the image. Try again.</string>
+    <string name="share_title">Share screenshot</string>
+    <string name="clip_label">Screenshot</string>
+    <string name="shot_missing">This screenshot is no longer available.</string>
+    <string name="discard_title">Discard this screenshot?</string>
+    <string name="discard_body">You haven’t saved, copied or shared it yet.</string>
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep editing</string>
+</resources>

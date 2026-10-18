@@ -1,0 +1,52 @@
+name: FloatShot APK
+
+on:
+  push:
+    paths:
+      - 'floatshot/**'
+      - '.github/workflows/floatshot-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache build tools
+        uses: actions/cache@v4
+        with:
+          path: floatshot/android/.tools
+          key: floatshot-apk-tools-v1
+
+      # Optional: add a repository secret FLOATSHOT_KEYSTORE_B64 (base64 of a PKCS12 keystore) and
+      # FLOATSHOT_KEYSTORE_PASS so every build is signed with the same key and installs as an update.
+      # Without it, each run signs with a fresh key.
+      - name: Restore signing key
+        env:
+          KS_B64: ${{ secrets.FLOATSHOT_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            mkdir -p floatshot/android/keystore
+            echo "$KS_B64" | base64 -d > floatshot/android/keystore/floatshot.p12
+          fi
+
+      - name: Build APK
+        env:
+          OUT_APK: ${{ github.workspace }}/FloatShot.apk
+          VERSION_CODE: ${{ github.run_number }}
+          KEYSTORE_PASS: ${{ secrets.FLOATSHOT_KEYSTORE_PASS || 'floatshot' }}
+        run: floatshot/android/build-apk.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FloatShot-apk
+          path: FloatShot.apk

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:importantForAccessibility="no"
+                android:src="@mipmap/ic_launcher" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/app_name"
+                    android:textColor="@color/text"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="@string/tagline"
+                    android:textColor="@color/text2"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Step 1: overlay permission -->
+        <LinearLayout style="@style/Card" android:layout_marginTop="24dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView style="@style/CardTitle" android:text="@string/step1_title" />
+
+                <TextView android:id="@+id/overlay_chip" style="@style/Chip" />
+            </LinearLayout>
+
+            <TextView android:id="@+id/overlay_body" style="@style/CardBody" />
+
+            <Button
+                android:id="@+id/overlay_button"
+                style="@style/FilledButton"
+                android:text="@string/step1_button" />
+
+            <TextView
+                android:id="@+id/restricted_hint"
+                style="@style/CardBody"
+                android:layout_marginTop="12dp"
+                android:text="@string/restricted_hint"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/overlay_app_info"
+                style="@style/LinkButton"
+                android:text="@string/open_app_info" />
+        </LinearLayout>
+
+        <!-- Step 2: start / stop the button -->
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView style="@style/CardTitle" android:text="@string/step2_title" />
+
+                <TextView android:id="@+id/bubble_chip" style="@style/Chip" />
+            </LinearLayout>
+
+            <TextView android:id="@+id/bubble_body" style="@style/CardBody" />
+
+            <Button
+                android:id="@+id/bubble_button"
+                style="@style/FilledButton"
+                android:text="@string/start_bubble" />
+        </LinearLayout>
+
+        <!-- Setting -->
+        <LinearLayout
+            style="@style/Card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/CardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_weight="0"
+                    android:text="@string/keep_ready_title" />
+
+                <TextView style="@style/CardBody" android:text="@string/keep_ready_body" />
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/keep_ready"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:contentDescription="@string/keep_ready_title" />
+        </LinearLayout>
+
+        <!-- How to use -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_weight="0"
+                android:text="@string/howto_title" />
+
+            <TextView style="@style/Bullet" android:text="@string/howto_1" />
+            <TextView style="@style/Bullet" android:text="@string/howto_2" />
+            <TextView style="@style/Bullet" android:text="@string/howto_3" />
+            <TextView style="@style/Bullet" android:text="@string/howto_4" />
+        </LinearLayout>
+
+        <!-- Battery tip -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_weight="0"
+                android:text="@string/battery_title" />
+
+            <TextView style="@style/CardBody" android:text="@string/battery_body" />
+
+            <TextView
+                android:id="@+id/battery_app_info"
+                style="@style/LinkButton"
+                android:text="@string/open_app_info" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="@string/privacy"
+            android:textColor="@color/text2"
+            android:textSize="12sp" />
+    </LinearLayout>
+</ScrollView>

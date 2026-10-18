@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Setup screen, light theme (values-night has the dark versions). -->
+    <color name="accent">#6A4BF5</color>
+    <color name="on_accent">#FFFFFF</color>
+    <color name="bg">#F5F4FA</color>
+    <color name="card">#FFFFFF</color>
+    <color name="text">#17161D</color>
+    <color name="text2">#5C5A69</color>
+    <color name="outline">#DAD7E6</color>
+    <color name="disabled_bg">#E3E1EB</color>
+    <color name="disabled_text">#A3A1AE</color>
+    <color name="chip_ok_bg">#DDF4E4</color>
+    <color name="chip_ok_text">#11663A</color>
+    <color name="chip_wait_bg">#FFF1D6</color>
+    <color name="chip_wait_text">#8A5300</color>
+    <color name="chip_off_bg">#ECEAF3</color>
+    <color name="chip_off_text">#5C5A69</color>
+
+    <!-- Editor, always dark. -->
+    <color name="editor_bg">#111015</color>
+    <color name="editor_icon">#E6E4EE</color>
+    <color name="editor_icon_disabled">#55535E</color>
+    <color name="editor_text2">#A8A6B4</color>
+    <color name="editor_accent">#A18BFF</color>
+    <color name="editor_on_accent">#16112E</color>
+    <color name="editor_selected">#2C2840</color>
+</resources>
