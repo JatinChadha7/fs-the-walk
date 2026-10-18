@@ -37,7 +37,8 @@ final class ScreenshotWatcher extends ContentObserver {
 
     private static final String TAG = "ClaudeShot";
     // Change notifications come in bursts while a picture is written; act once it settles.
-    private static final long SETTLE_MS = 400;
+    // Kept short: the phone's own preview already costs seconds before the picture is saved.
+    private static final long SETTLE_MS = 150;
     // Only screenshots this fresh count; older pictures can be touched by other apps any time.
     private static final long MAX_AGE_S = 20;
     // Taller than this is a scrolling ("long") screenshot; those stay with the phone's own editor.

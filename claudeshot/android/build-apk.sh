@@ -22,8 +22,8 @@ TOOLS="${TOOLS_DIR:-$HERE/.tools}"
 OUT_APK="${OUT_APK:-$APP/ClaudeShot.apk}"
 MIRRORS=("${MAVEN_MIRROR:-https://maven-central.storage-download.googleapis.com/maven2}" "https://repo1.maven.org/maven2")
 
-VERSION_CODE="${VERSION_CODE:-4}"
-VERSION_NAME="${VERSION_NAME:-1.3}"
+VERSION_CODE="${VERSION_CODE:-5}"
+VERSION_NAME="${VERSION_NAME:-1.4}"
 KEYSTORE="${KEYSTORE:-$HERE/keystore/claudeshot.p12}"
 KEYSTORE_PASS="${KEYSTORE_PASS:-claudeshot}"
 KEY_ALIAS="${KEY_ALIAS:-claudeshot}"
@@ -75,7 +75,7 @@ echo "== resources"
 "$AAPT2" link -o "$BUILD/base.apk" \
   -I "$FRAMEWORK" \
   --manifest "$HERE/AndroidManifest.xml" \
-  --min-sdk-version 30 --target-sdk-version 35 \
+  --min-sdk-version 30 --target-sdk-version 34 \
   --version-code "$VERSION_CODE" --version-name "$VERSION_NAME" \
   --java "$BUILD/gen" \
   "$BUILD/compiled/res.zip"

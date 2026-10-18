@@ -43,6 +43,15 @@ Android keeps the Power + Volume down combination for itself; no app can take it
 own screenshot gesture) then opens straight in the ClaudeShot editor, about a second later. Your
 phone still saves the original to its Screenshots album and shows its own preview for a moment.
 
+Only want the keys? Turn **Floating button** off and keep *Phone screenshot buttons* on; keep
+"display over other apps" allowed, because that's what lets ClaudeShot open its editor by itself.
+(ClaudeShot targets Android 14 for this reason: for apps targeting 15, Android would only allow
+it while the floating button is on screen.)
+
+How fast the editor opens depends mostly on the phone. Many phones show a preview thumbnail for a
+few seconds and only save the screenshot when it goes away; swiping the thumbnail away saves it
+straight away, and ClaudeShot opens right after.
+
 This needs access to your photos, so ClaudeShot can see the new screenshot. On Android 14 and
 newer choose **Allow all**: with "selected photos only" it can't see new screenshots. Scrolling
 ("long") screenshots stay with the phone's own editor.

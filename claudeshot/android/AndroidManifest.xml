@@ -2,7 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.jc.claudeshot">
 
-    <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="35" />
+    <!-- Targets Android 14 on purpose: for apps targeting 15+, Android lets an app with "display
+         over other apps" open its editor from the background only while its floating button is on
+         screen. Targeting 14 keeps that working for people who switch the button off and only use
+         the phone's screenshot keys. Nothing here needs an Android 15 API. -->
+    <uses-sdk android:minSdkVersion="30" android:targetSdkVersion="34" />
 
     <!-- The floating button is an overlay window. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />

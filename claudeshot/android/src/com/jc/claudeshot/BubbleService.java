@@ -49,7 +49,7 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
     // Lets the "start screen capture?" prompt animate away before the first screenshot.
     private static final long AFTER_CONSENT_MS = 900;
     // If the editor hasn't picked the screenshot up by then, it probably wasn't allowed to open.
-    private static final long EDITOR_CHECK_MS = 2500;
+    private static final long EDITOR_CHECK_MS = 1200;
     private static final long CONSENT_TIMEOUT_MS = 60_000;
 
     private static BubbleService running;
