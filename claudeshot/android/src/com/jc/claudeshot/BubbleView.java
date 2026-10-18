@@ -20,17 +20,19 @@ final class BubbleView extends View {
     private final Paint shadow = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint ring = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final float margin;
+    private final float fixedMargin; // < 0: use the style's shadow room
     private final float dp;
+    private float margin;
     private BubbleStyle style;
     private Drawable icon;
     private boolean hidden;
     private boolean poked;
     private final Paint pokePaint = new Paint();
 
+    /** @param margin room left around the button in px, or -1 to use the style's shadow room */
     BubbleView(Context context, float margin) {
         super(context);
-        this.margin = margin;
+        fixedMargin = margin;
         dp = context.getResources().getDisplayMetrics().density;
         ring.setStyle(Paint.Style.STROKE);
         ring.setStrokeWidth(1.5f * dp);
@@ -41,6 +43,7 @@ final class BubbleView extends View {
 
     void setStyle(BubbleStyle style) {
         this.style = style;
+        margin = fixedMargin >= 0 ? fixedMargin : style.shadowDp() * dp;
         if (style.icon == BubbleStyle.ICON_LETTERS) {
             icon = null;
         } else {

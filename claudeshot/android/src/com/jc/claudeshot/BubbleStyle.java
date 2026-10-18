@@ -31,8 +31,10 @@ final class BubbleStyle {
     private static final int[] ICON_RES = {
             R.drawable.ic_glyph, R.drawable.ic_camera, R.drawable.ic_scissors, R.drawable.ic_pen, 0};
 
-    static final int[] SIZE_NAMES = {R.string.size_s, R.string.size_m, R.string.size_l};
-    private static final float[] SIZE_DP = {44, 52, 60};
+    static final float MIN_SIZE_DP = 24;
+    static final float MAX_SIZE_DP = 64;
+    private static final float DEFAULT_SIZE_DP = 44;
+    private static final float[] OLD_SIZE_DP = {DEFAULT_SIZE_DP, 52, 60}; // small / medium / large of 1.3
 
     static final int IDLE_SOLID = 0;
     static final int IDLE_FADE = 1;
@@ -43,14 +45,14 @@ final class BubbleStyle {
 
     final int color;
     final int icon;
-    final int size;
+    final float sizeDp; // diameter of the button
     final int idle;
     final String letters;
 
-    BubbleStyle(int color, int icon, int size, int idle, String letters) {
+    BubbleStyle(int color, int icon, float sizeDp, int idle, String letters) {
         this.color = clamp(color, GRADIENTS.length);
         this.icon = clamp(icon, ICON_NAMES.length);
-        this.size = clamp(size, SIZE_DP.length);
+        this.sizeDp = Math.max(MIN_SIZE_DP, Math.min(MAX_SIZE_DP, sizeDp));
         this.idle = clamp(idle, IDLE_NAMES.length);
         this.letters = cleanLetters(letters);
     }
@@ -60,17 +62,17 @@ final class BubbleStyle {
         return new BubbleStyle(
                 p.getInt(Prefs.STYLE_COLOR, DEFAULT_COLOR),
                 p.getInt(Prefs.STYLE_ICON, ICON_LETTERS),
-                p.getInt(Prefs.STYLE_SIZE, 0),
+                p.getFloat(Prefs.STYLE_SIZE_DP, OLD_SIZE_DP[clamp(p.getInt(Prefs.STYLE_SIZE, 0), OLD_SIZE_DP.length)]),
                 p.getInt(Prefs.STYLE_IDLE, IDLE_FADE),
                 p.getString(Prefs.STYLE_LETTERS, DEFAULT_LETTERS));
     }
 
     BubbleStyle withIcon(int newIcon) {
-        return new BubbleStyle(color, newIcon, size, idle, letters);
+        return new BubbleStyle(color, newIcon, sizeDp, idle, letters);
     }
 
     BubbleStyle withColor(int newColor) {
-        return new BubbleStyle(newColor, icon, size, idle, letters);
+        return new BubbleStyle(newColor, icon, sizeDp, idle, letters);
     }
 
     static String cleanLetters(String s) {
@@ -103,7 +105,17 @@ final class BubbleStyle {
     }
 
     float buttonDp() {
-        return SIZE_DP[size];
+        return sizeDp;
+    }
+
+    /** Room around the button for its soft shadow: less on small buttons, so it isn't a halo. */
+    float shadowDp() {
+        return Math.max(4f, Math.min(7f, sizeDp * 0.135f));
+    }
+
+    /** The whole window: the button plus its shadow on every side. */
+    float windowDp() {
+        return sizeDp + 2 * shadowDp();
     }
 
     private static int clamp(int v, int count) {

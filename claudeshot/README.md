@@ -32,7 +32,7 @@ for apps you install yourself.
   included.
 - **Top bar:** Copy (paste into any app), Save (to *Pictures/ClaudeShot* in your gallery) and Share.
 - **Button style:** seven colours, five icons (viewfinder, camera, scissors, pencil, or your own one
-  or two letters, such as *JC*), three sizes, and what it does when not in use: stay solid, fade, or
+  or two letters, such as *JC*), a size slider (from tiny to large), and what it does when not in use: stay solid, fade, or
   fade and tuck half off the edge. A tucked button comes out on the first tap and takes a
   screenshot on the second. It starts as a small blue *JC* button.
 

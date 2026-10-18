@@ -38,9 +38,8 @@
     <string name="icon_scissors">Scissors</string>
     <string name="icon_pencil">Pencil</string>
     <string name="icon_letters">Letters</string>
-    <string name="size_s">Small</string>
-    <string name="size_m">Medium</string>
-    <string name="size_l">Large</string>
+    <string name="size_smaller">Smaller</string>
+    <string name="size_bigger">Bigger</string>
     <string name="idle_solid">Solid</string>
     <string name="idle_fade">Fade</string>
     <string name="idle_tuck">Tuck in</string>

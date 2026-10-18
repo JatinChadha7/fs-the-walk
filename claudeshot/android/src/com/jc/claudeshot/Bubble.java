@@ -39,7 +39,6 @@ final class Bubble {
     private static final String TAG = "ClaudeShot";
     private static final long IDLE_DELAY_MS = 2500;
     private static final float IDLE_ALPHA = 0.6f;
-    private static final float SHADOW_DP = 7;
 
     private final Context context;
     private final WindowManager wm;
@@ -86,7 +85,7 @@ final class Bubble {
         dp = context.getResources().getDisplayMetrics().density;
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
-        view = new BubbleView(context, SHADOW_DP * dp);
+        view = new BubbleView(context, -1);
         view.setContentDescription(context.getString(R.string.bubble_description));
         view.setOnTouchListener(touch);
         view.setOnClickListener(new View.OnClickListener() {
@@ -107,7 +106,7 @@ final class Bubble {
     void setStyle(BubbleStyle newStyle) {
         style = newStyle;
         view.setStyle(newStyle);
-        int newSize = Math.round((newStyle.buttonDp() + 2 * SHADOW_DP) * dp);
+        int newSize = Math.round(newStyle.windowDp() * dp);
         if (newSize != size) {
             size = newSize;
             lp.width = size;

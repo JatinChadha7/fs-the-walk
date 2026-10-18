@@ -14,7 +14,8 @@ final class Prefs {
     static final String ASKED_NOTIFICATIONS = "asked_notifications";
     static final String STYLE_COLOR = "style_color";
     static final String STYLE_ICON = "style_icon";
-    static final String STYLE_SIZE = "style_size";
+    static final String STYLE_SIZE = "style_size"; // 1.3 and older: 0, 1, 2 for small, medium, large
+    static final String STYLE_SIZE_DP = "style_size_dp";
     static final String STYLE_IDLE = "style_idle";
     static final String STYLE_LETTERS = "style_letters";
     static final String TOOL = "tool";

@@ -22,8 +22,8 @@ TOOLS="${TOOLS_DIR:-$HERE/.tools}"
 OUT_APK="${OUT_APK:-$APP/ClaudeShot.apk}"
 MIRRORS=("${MAVEN_MIRROR:-https://maven-central.storage-download.googleapis.com/maven2}" "https://repo1.maven.org/maven2")
 
-VERSION_CODE="${VERSION_CODE:-5}"
-VERSION_NAME="${VERSION_NAME:-1.4}"
+VERSION_CODE="${VERSION_CODE:-6}"
+VERSION_NAME="${VERSION_NAME:-1.5}"
 KEYSTORE="${KEYSTORE:-$HERE/keystore/claudeshot.p12}"
 KEYSTORE_PASS="${KEYSTORE_PASS:-claudeshot}"
 KEY_ALIAS="${KEY_ALIAS:-claudeshot}"

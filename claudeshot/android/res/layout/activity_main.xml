@@ -156,7 +156,35 @@
 
             <TextView style="@style/PickerLabel" android:text="@string/style_size" />
 
-            <LinearLayout android:id="@+id/style_sizes" style="@style/PickerRow" />
+            <SeekBar
+                android:id="@+id/style_size"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:contentDescription="@string/style_size" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/size_smaller"
+                    android:textColor="@color/text2"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/size_bigger"
+                    android:textColor="@color/text2"
+                    android:textSize="12sp" />
+            </LinearLayout>
 
             <TextView style="@style/PickerLabel" android:text="@string/style_idle" />
 

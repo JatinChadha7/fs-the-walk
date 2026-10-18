@@ -62,6 +62,7 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
     private ScreenshotWatcher watcher;
     private ScreenGrabber grabber;
     private boolean busy;
+    private int shownText; // the notification text currently showing
     private boolean awaitingConsent;
 
     private final Runnable consentTimeout = new Runnable() {
@@ -177,7 +178,11 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
             watcher.stop();
             watcher = null;
         }
-        getSystemService(NotificationManager.class).notify(NOTIFICATION_ID, buildNotification());
+        int text = notificationText();
+        if (text != shownText) {
+            shownText = text;
+            getSystemService(NotificationManager.class).notify(NOTIFICATION_ID, buildNotification());
+        }
         notifyState();
     }
 
@@ -425,9 +430,7 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
                 new Intent(this, BubbleService.class).setAction(ACTION_STOP), PendingIntent.FLAG_IMMUTABLE);
         Notification.Action stopAction = new Notification.Action.Builder(
                 Icon.createWithResource(this, R.drawable.ic_close), getString(R.string.notif_stop), stop).build();
-        boolean button = bubble != null;
-        boolean phone = watcher != null;
-        int text = button && phone ? R.string.notif_text_both : phone ? R.string.notif_text_watch : R.string.notif_text;
+        int text = notificationText();
         return new Notification.Builder(this, CHANNEL_BUBBLE)
                 .setSmallIcon(R.drawable.ic_glyph)
                 .setContentTitle(getString(R.string.notif_title))
@@ -438,6 +441,12 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
                 .setCategory(Notification.CATEGORY_SERVICE)
                 .addAction(stopAction)
                 .build();
+    }
+
+    private int notificationText() {
+        boolean button = bubble != null;
+        boolean phone = watcher != null;
+        return button && phone ? R.string.notif_text_both : phone ? R.string.notif_text_watch : R.string.notif_text;
     }
 
     private void createChannels() {

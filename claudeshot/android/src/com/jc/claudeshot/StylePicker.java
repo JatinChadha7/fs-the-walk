@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -21,8 +22,8 @@ import java.util.List;
  * settings, which the running floating button follows, so it changes on screen as you pick.
  */
 final class StylePicker {
-    private static final float SHADOW_DP = 7;
     private static final float CHOICE_DP = 40;
+    private static final float SIZE_STEP_DP = 2;
     private static final int[] IDLE_BODIES = {R.string.idle_solid_body, R.string.idle_fade_body, R.string.idle_tuck_body};
 
     private final Activity activity;
@@ -31,7 +32,7 @@ final class StylePicker {
     private final BubbleView preview;
     private final List<BubbleView> colorChoices = new ArrayList<>();
     private final List<BubbleView> iconChoices = new ArrayList<>();
-    private final List<TextView> sizeChoices = new ArrayList<>();
+    private final SeekBar size;
     private final List<TextView> idleChoices = new ArrayList<>();
     private final EditText letters;
     private final TextView idleBody;
@@ -44,7 +45,7 @@ final class StylePicker {
 
         FrameLayout previewFrame = activity.findViewById(R.id.style_preview);
         previewFrame.setClipToOutline(true); // a tucked-in preview is cut at the rounded edge
-        preview = new BubbleView(activity, SHADOW_DP * dp);
+        preview = new BubbleView(activity, -1);
         preview.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         previewFrame.addView(preview);
 
@@ -60,10 +61,24 @@ final class StylePicker {
             addCell(icons, v);
             iconChoices.add(v);
         }
-        LinearLayout sizes = activity.findViewById(R.id.style_sizes);
-        for (int i = 0; i < BubbleStyle.SIZE_NAMES.length; i++) {
-            sizeChoices.add(chip(sizes, BubbleStyle.SIZE_NAMES[i], Prefs.STYLE_SIZE, i));
-        }
+        size = activity.findViewById(R.id.style_size);
+        size.setMax(Math.round((BubbleStyle.MAX_SIZE_DP - BubbleStyle.MIN_SIZE_DP) / SIZE_STEP_DP));
+        size.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar bar, int progress, boolean fromUser) {
+                if (!fromUser || refreshing) return;
+                // Saved as it moves, so the button on screen resizes while dragging too.
+                float dpValue = BubbleStyle.MIN_SIZE_DP + progress * SIZE_STEP_DP;
+                prefs.edit().putFloat(Prefs.STYLE_SIZE_DP, dpValue).apply();
+                refresh();
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar bar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar bar) {}
+        });
         LinearLayout idles = activity.findViewById(R.id.style_idle);
         for (int i = 0; i < BubbleStyle.IDLE_NAMES.length; i++) {
             idleChoices.add(chip(idles, BubbleStyle.IDLE_NAMES[i], Prefs.STYLE_IDLE, i));
@@ -96,7 +111,7 @@ final class StylePicker {
         // The preview sits at the right edge like the real button, at its real size, and shows
         // what it looks like while not in use.
         preview.setStyle(style);
-        int px = Math.round((style.buttonDp() + 2 * SHADOW_DP) * dp);
+        int px = Math.round(style.windowDp() * dp);
         int edge = Math.round(8 * dp);
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(px, px, Gravity.END | Gravity.CENTER_VERTICAL);
         lp.rightMargin = edge;
@@ -112,7 +127,7 @@ final class StylePicker {
             iconChoices.get(i).setStyle(style.withIcon(i));
             iconChoices.get(i).setSelected(i == style.icon);
         }
-        for (int i = 0; i < sizeChoices.size(); i++) sizeChoices.get(i).setSelected(i == style.size);
+        size.setProgress(Math.round((style.sizeDp - BubbleStyle.MIN_SIZE_DP) / SIZE_STEP_DP));
         for (int i = 0; i < idleChoices.size(); i++) idleChoices.get(i).setSelected(i == style.idle);
         idleBody.setText(IDLE_BODIES[style.idle]);
         letters.setVisibility(style.icon == BubbleStyle.ICON_LETTERS ? View.VISIBLE : View.GONE);
