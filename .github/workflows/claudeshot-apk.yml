@@ -1,0 +1,52 @@
+name: ClaudeShot APK
+
+on:
+  push:
+    paths:
+      - 'claudeshot/**'
+      - '.github/workflows/claudeshot-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache build tools
+        uses: actions/cache@v4
+        with:
+          path: claudeshot/android/.tools
+          key: claudeshot-apk-tools-v1
+
+      # Optional: add a repository secret CLAUDESHOT_KEYSTORE_B64 (base64 of a PKCS12 keystore) and
+      # CLAUDESHOT_KEYSTORE_PASS so every build is signed with the same key and installs as an update.
+      # Without it, each run signs with a fresh key.
+      - name: Restore signing key
+        env:
+          KS_B64: ${{ secrets.CLAUDESHOT_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            mkdir -p claudeshot/android/keystore
+            echo "$KS_B64" | base64 -d > claudeshot/android/keystore/claudeshot.p12
+          fi
+
+      - name: Build APK
+        env:
+          OUT_APK: ${{ github.workspace }}/ClaudeShot.apk
+          VERSION_CODE: ${{ github.run_number }}
+          KEYSTORE_PASS: ${{ secrets.CLAUDESHOT_KEYSTORE_PASS || 'claudeshot' }}
+        run: claudeshot/android/build-apk.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ClaudeShot-apk
+          path: ClaudeShot.apk

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/editor_bg"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="10dp">
+
+        <ImageButton
+            android:id="@+id/close"
+            style="@style/EditorIconButton"
+            android:contentDescription="@string/close"
+            android:src="@drawable/ic_close" />
+
+        <ImageButton
+            android:id="@+id/undo"
+            style="@style/EditorIconButton"
+            android:contentDescription="@string/undo"
+            android:src="@drawable/ic_undo" />
+
+        <ImageButton
+            android:id="@+id/redo"
+            style="@style/EditorIconButton"
+            android:contentDescription="@string/redo"
+            android:src="@drawable/ic_redo" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <ImageButton
+            android:id="@+id/copy"
+            style="@style/EditorIconButton"
+            android:contentDescription="@string/copy"
+            android:src="@drawable/ic_copy" />
+
+        <ImageButton
+            android:id="@+id/save"
+            style="@style/EditorIconButton"
+            android:contentDescription="@string/save"
+            android:src="@drawable/ic_download" />
+
+        <TextView
+            android:id="@+id/share"
+            style="@style/AccentPill"
+            android:drawableStart="@drawable/ic_share_small"
+            android:text="@string/share" />
+    </LinearLayout>
+
+    <com.jc.claudeshot.EditorView
+        android:id="@+id/editor"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:id="@+id/crop_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:minHeight="100dp"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/crop_cancel"
+            style="@style/EditorTextButton"
+            android:text="@string/cancel" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="@string/crop_hint"
+            android:textColor="@color/editor_text2"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/crop_apply"
+            style="@style/AccentPill"
+            android:text="@string/crop_apply" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/tool_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="4dp">
+
+        <!-- Filled from code: one button per tool, then the colour swatches and the size button. -->
+        <LinearLayout
+            android:id="@+id/tools"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+
+        <LinearLayout
+            android:id="@+id/colors"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" />
+    </LinearLayout>
+</LinearLayout>
