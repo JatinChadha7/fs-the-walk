@@ -12,15 +12,15 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.view.WindowInsets;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/** Setup screen: grant the overlay permission, start or stop the floating button, settings. */
+/** Settings: the overlay permission, the floating button and its style, and the phone-button screenshots. */
 public class MainActivity extends Activity {
     private static final int REQUEST_NOTIFICATIONS = 1;
+    private static final int REQUEST_PHOTOS = 2;
     private static final String POST_NOTIFICATIONS = "android.permission.POST_NOTIFICATIONS"; // API 33
 
     private TextView overlayChip;
@@ -28,10 +28,14 @@ public class MainActivity extends Activity {
     private View overlayButton;
     private View restrictedHint;
     private View overlayAppInfo;
-    private TextView bubbleChip;
     private TextView bubbleBody;
-    private Button bubbleButton;
+    private Switch bubbleSwitch;
+    private Switch watchSwitch;
+    private TextView watchHint;
+    private View watchAppInfo;
     private Switch keepReady;
+    private StylePicker stylePicker;
+    private boolean refreshing;
 
     private final Runnable onServiceChanged = new Runnable() {
         @Override
@@ -62,10 +66,13 @@ public class MainActivity extends Activity {
         overlayButton = findViewById(R.id.overlay_button);
         restrictedHint = findViewById(R.id.restricted_hint);
         overlayAppInfo = findViewById(R.id.overlay_app_info);
-        bubbleChip = findViewById(R.id.bubble_chip);
         bubbleBody = findViewById(R.id.bubble_body);
-        bubbleButton = findViewById(R.id.bubble_button);
+        bubbleSwitch = findViewById(R.id.bubble_switch);
+        watchSwitch = findViewById(R.id.watch_switch);
+        watchHint = findViewById(R.id.watch_hint);
+        watchAppInfo = findViewById(R.id.watch_app_info);
         keepReady = findViewById(R.id.keep_ready);
+        stylePicker = new StylePicker(this);
 
         overlayButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -80,18 +87,25 @@ public class MainActivity extends Activity {
             }
         };
         overlayAppInfo.setOnClickListener(appInfo);
+        watchAppInfo.setOnClickListener(appInfo);
         findViewById(R.id.battery_app_info).setOnClickListener(appInfo);
-        bubbleButton.setOnClickListener(new View.OnClickListener() {
+
+        bubbleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-                toggleBubble();
+            public void onCheckedChanged(CompoundButton button, boolean checked) {
+                if (!refreshing) setBubbleOn(checked);
             }
         });
-        keepReady.setChecked(Prefs.keepReady(this));
+        watchSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton button, boolean checked) {
+                if (!refreshing) setWatchOn(checked);
+            }
+        });
         keepReady.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton button, boolean checked) {
-                Prefs.of(MainActivity.this).edit().putBoolean(Prefs.KEEP_READY, checked).apply();
+                if (!refreshing) Prefs.of(MainActivity.this).edit().putBoolean(Prefs.KEEP_READY, checked).apply();
             }
         });
     }
@@ -100,6 +114,8 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         BubbleService.setStateListener(onServiceChanged);
+        // Back from the overlay settings, after a restart the phone blocked, and so on.
+        startOrSync();
         refresh();
     }
 
@@ -110,8 +126,8 @@ public class MainActivity extends Activity {
     }
 
     private void refresh() {
+        refreshing = true;
         boolean overlay = Settings.canDrawOverlays(this);
-        boolean running = BubbleService.isRunning();
 
         chip(overlayChip, overlay ? R.string.status_done : R.string.status_needed,
                 overlay ? R.color.chip_ok_bg : R.color.chip_wait_bg, overlay ? R.color.chip_ok_text : R.color.chip_wait_text);
@@ -121,13 +137,23 @@ public class MainActivity extends Activity {
         restrictedHint.setVisibility(setupVisibility);
         overlayAppInfo.setVisibility(setupVisibility);
 
-        chip(bubbleChip, running ? R.string.status_on : R.string.status_off,
-                running ? R.color.chip_ok_bg : R.color.chip_off_bg, running ? R.color.chip_ok_text : R.color.chip_off_text);
-        bubbleBody.setText(!overlay ? R.string.step2_locked : running ? R.string.step2_on : R.string.step2_off);
-        bubbleButton.setEnabled(overlay);
-        bubbleButton.setText(running ? R.string.stop_bubble : R.string.start_bubble);
-        bubbleButton.setBackgroundResource(running ? R.drawable.btn_outlined : R.drawable.btn_filled);
-        bubbleButton.setTextColor(getColorStateList(running ? R.color.accent : R.color.btn_filled_text));
+        boolean bubbleOn = Prefs.bubbleReady(this);
+        bubbleSwitch.setEnabled(overlay);
+        bubbleSwitch.setChecked(bubbleOn);
+        bubbleBody.setText(!overlay ? R.string.bubble_locked : bubbleOn ? R.string.bubble_on : R.string.bubble_off);
+
+        boolean watchWanted = Prefs.watchScreenshots(this);
+        boolean canRead = ScreenshotWatcher.canRead(this);
+        watchSwitch.setChecked(watchWanted && canRead);
+        int hint = ScreenshotWatcher.hasPartialAccess(this) ? R.string.watch_partial
+                : watchWanted && !canRead ? R.string.watch_needs_photos : 0;
+        watchHint.setVisibility(hint != 0 ? View.VISIBLE : View.GONE);
+        watchAppInfo.setVisibility(hint != 0 ? View.VISIBLE : View.GONE);
+        if (hint != 0) watchHint.setText(hint);
+
+        keepReady.setChecked(Prefs.keepReady(this));
+        stylePicker.refresh();
+        refreshing = false;
     }
 
     private void chip(TextView chip, int text, int bg, int fg) {
@@ -136,35 +162,63 @@ public class MainActivity extends Activity {
         chip.setTextColor(getColor(fg));
     }
 
-    private void toggleBubble() {
-        if (BubbleService.isRunning()) {
-            BubbleService.stop(this);
-            return;
-        }
-        if (!Settings.canDrawOverlays(this)) {
+    // ---- switches
+
+    private void setBubbleOn(boolean on) {
+        if (on && !Settings.canDrawOverlays(this)) {
             openOverlaySettings();
+            refresh();
             return;
         }
-        // Ask once for notifications so the "FloatShot is on" notification with its Stop button shows.
-        if (Build.VERSION.SDK_INT >= 33
-                && checkSelfPermission(POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                && !Prefs.of(this).getBoolean(Prefs.ASKED_NOTIFICATIONS, false)) {
-            Prefs.of(this).edit().putBoolean(Prefs.ASKED_NOTIFICATIONS, true).apply();
-            requestPermissions(new String[] {POST_NOTIFICATIONS}, REQUEST_NOTIFICATIONS);
+        Prefs.of(this).edit().putBoolean(Prefs.BUBBLE_ON, on).apply();
+        startOrSync();
+        refresh();
+    }
+
+    private void setWatchOn(boolean on) {
+        if (on && !ScreenshotWatcher.canRead(this)) {
+            String[] wanted = Build.VERSION.SDK_INT >= 34
+                    ? new String[] {ScreenshotWatcher.READ_MEDIA_IMAGES, ScreenshotWatcher.READ_MEDIA_PARTIAL}
+                    : Build.VERSION.SDK_INT >= 33
+                    ? new String[] {ScreenshotWatcher.READ_MEDIA_IMAGES}
+                    : new String[] {ScreenshotWatcher.READ_STORAGE};
+            requestPermissions(wanted, REQUEST_PHOTOS);
             return;
         }
-        startBubble();
+        Prefs.of(this).edit().putBoolean(Prefs.WATCH_SCREENSHOTS, on).apply();
+        startOrSync();
+        refresh();
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == REQUEST_NOTIFICATIONS) startBubble(); // the button works either way
+        if (requestCode == REQUEST_PHOTOS) {
+            if (ScreenshotWatcher.canRead(this)) {
+                Prefs.of(this).edit().putBoolean(Prefs.WATCH_SCREENSHOTS, true).apply();
+            } else {
+                Toast.makeText(this, R.string.photos_denied, Toast.LENGTH_LONG).show();
+            }
+        }
+        // Notifications are optional: FloatShot works either way.
+        startOrSync();
+        refresh();
     }
 
-    private void startBubble() {
+    /**
+     * Starts or updates FloatShot to match the switches. The first time something is on, asks
+     * once for notifications so the "FloatShot is on" notice with its Stop button can show.
+     */
+    private void startOrSync() {
+        boolean wanted = Prefs.bubbleReady(this) || Prefs.watchScreenshots(this);
+        if (wanted && Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                && !Prefs.of(this).getBoolean(Prefs.ASKED_NOTIFICATIONS, false)) {
+            Prefs.of(this).edit().putBoolean(Prefs.ASKED_NOTIFICATIONS, true).apply();
+            requestPermissions(new String[] {POST_NOTIFICATIONS}, REQUEST_NOTIFICATIONS);
+            return; // continues in onRequestPermissionsResult
+        }
         try {
-            BubbleService.start(this);
-            Toast.makeText(this, R.string.bubble_started, Toast.LENGTH_LONG).show();
+            BubbleService.sync(this);
         } catch (RuntimeException e) {
             Toast.makeText(this, R.string.start_failed, Toast.LENGTH_LONG).show();
         }

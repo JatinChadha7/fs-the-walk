@@ -2,13 +2,21 @@ package com.jc.floatshot;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.provider.Settings;
 
 /** Settings shared by the screens and the floating-button service. */
 final class Prefs {
+    static final String BUBBLE_ON = "bubble_on";
+    static final String WATCH_SCREENSHOTS = "watch_screenshots";
     static final String KEEP_READY = "keep_ready";
     static final String BUBBLE_RIGHT = "bubble_right";
     static final String BUBBLE_Y = "bubble_y";
     static final String ASKED_NOTIFICATIONS = "asked_notifications";
+    static final String STYLE_COLOR = "style_color";
+    static final String STYLE_ICON = "style_icon";
+    static final String STYLE_SIZE = "style_size";
+    static final String STYLE_IDLE = "style_idle";
+    static final String STYLE_LETTERS = "style_letters";
     static final String TOOL = "tool";
     static final String COLOR = "color";
     static final String SIZE = "size";
@@ -17,6 +25,21 @@ final class Prefs {
 
     static SharedPreferences of(Context context) {
         return context.getSharedPreferences("floatshot", Context.MODE_PRIVATE);
+    }
+
+    /** The floating button is wanted (it also needs the overlay permission to show). */
+    static boolean bubbleOn(Context context) {
+        return of(context).getBoolean(BUBBLE_ON, true);
+    }
+
+    /** The floating button is wanted and allowed. */
+    static boolean bubbleReady(Context context) {
+        return bubbleOn(context) && Settings.canDrawOverlays(context);
+    }
+
+    /** Screenshots taken with the phone's own buttons open in the editor. */
+    static boolean watchScreenshots(Context context) {
+        return of(context).getBoolean(WATCH_SCREENSHOTS, false);
     }
 
     /** Whether the screen-capture session stays open between screenshots. */

@@ -17,8 +17,8 @@ for apps you install yourself.
 1. **Allow the floating button.** Tap *Allow display over other apps*, find **FloatShot** in the
    list and turn it on. If Android says it's a *restricted setting*, open App info, tap ⋮ at the
    top right, choose *Allow restricted settings* and try again.
-2. **Start the floating button.** Allow notifications if asked. They show a "FloatShot is on"
-   notice with a Stop button.
+2. **Turn on the floating button.** It's on by default once step 1 is done. Allow notifications
+   if asked: they show a "FloatShot is on" notice with a Stop button.
 3. **Take your first screenshot.** Tap the floating button. Android asks *"Start recording or
    casting with FloatShot?"*. Tap **Start**. FloatShot only grabs one picture each time you tap.
 
@@ -31,6 +31,21 @@ for apps you install yourself.
   OTPs, faces…) and Crop. Eight colours and three line sizes. Undo and redo everything, crop
   included.
 - **Top bar:** Copy (paste into any app), Save (to *Pictures/FloatShot* in your gallery) and Share.
+- **Button style:** seven colours, five icons (viewfinder, camera, scissors, pencil, or your own one
+  or two letters, such as *JC*), three sizes, and what it does when not in use: stay solid, fade, or
+  fade and tuck half off the edge. A tucked button comes out on the first tap and takes a
+  screenshot on the second.
+
+### Power + Volume down
+
+Android keeps the Power + Volume down combination for itself; no app can take it over. Turn on
+**Phone screenshot buttons** instead: every screenshot you take with those keys (or your phone's
+own screenshot gesture) then opens straight in the FloatShot editor, about a second later. Your
+phone still saves the original to its Screenshots album and shows its own preview for a moment.
+
+This needs access to your photos, so FloatShot can see the new screenshot. On Android 14 and
+newer choose **Allow all**: with "selected photos only" it can't see new screenshots. Scrolling
+("long") screenshots stay with the phone's own editor.
 
 ### Good to know
 
@@ -40,11 +55,14 @@ for apps you install yourself.
   phone. Turn the setting off if you'd rather be asked before every screenshot instead.
 - **Black screenshots.** Banking and video apps block screenshots, so those come out black,
   the same as with the phone's own screenshot button.
+- **The floating button appears in phone-button screenshots**, because it's on screen when the
+  phone takes them. Choose *Tuck in*, or turn the floating button off if you only use the keys.
 - **Button disappears by itself?** Some phones close background apps. In App info → Battery,
-  choose *Unrestricted* or *Allow background activity*. After restarting the phone, open FloatShot
-  and tap *Start floating button* again.
+  choose *Unrestricted* or *Allow background activity*. FloatShot turns itself back on after the
+  phone restarts.
 - **Privacy.** FloatShot has no internet permission. Screenshots stay on your phone unless you
-  share them.
+  share them. With photo access it only looks at the newest picture, and only to check whether
+  it's a screenshot.
 
 ## Build it yourself
 
@@ -67,9 +85,11 @@ with a different key, uninstall FloatShot first. The GitHub workflow uses the re
 
 | Piece | File |
 | --- | --- |
-| Setup screen | `MainActivity.java` |
-| Floating button and the ✕ target | `Bubble.java` |
-| Foreground service that owns the button and the capture session | `BubbleService.java` |
+| Settings screen, button style picker | `MainActivity.java`, `StylePicker.java` |
+| Floating button and the ✕ target; its look | `Bubble.java`; `BubbleView.java`, `BubbleStyle.java` |
+| Foreground service that runs the button, the capture session and the watcher | `BubbleService.java` |
+| Opening screenshots taken with Power + Volume down | `ScreenshotWatcher.java` |
+| Turning back on after a restart or update | `BootReceiver.java` |
 | Android's "start screen capture?" prompt | `CaptureActivity.java` |
 | Screen capture (MediaProjection → virtual display → ImageReader) | `ScreenGrabber.java` |
 | Editor screen and canvas | `EditorActivity.java`, `EditorView.java` |

@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 /** Marks up a fresh screenshot, then copies, saves or shares it. */
 public class EditorActivity extends Activity implements EditorView.Listener {
     static final String EXTRA_SHOT = "shot";
+    static final String EXTRA_SAVED_BY_PHONE = "saved_by_phone";
 
     private static final int SAVE = 0;
     private static final int COPY = 1;
@@ -73,13 +74,16 @@ public class EditorActivity extends Activity implements EditorView.Listener {
     private ExecutorService io;
     private String shotId;
     private int exportedVersion = -1; // editor version last saved, copied or shared
+    private boolean savedByPhone;
     private boolean exporting;
     private boolean closeAfterSave;
 
-    static Intent intent(Context context, String shotId) {
+    /** @param savedByPhone the phone already saved the screenshot, so closing it unedited loses nothing */
+    static Intent intent(Context context, String shotId, boolean savedByPhone) {
         // A task of its own, so closing the editor returns to whatever app the screenshot was of.
         return new Intent(context, EditorActivity.class)
                 .putExtra(EXTRA_SHOT, shotId)
+                .putExtra(EXTRA_SAVED_BY_PHONE, savedByPhone)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
     }
 
@@ -94,6 +98,8 @@ public class EditorActivity extends Activity implements EditorView.Listener {
             return;
         }
         getSystemService(NotificationManager.class).cancel(BubbleService.SHOT_NOTIFICATION_ID);
+        savedByPhone = getIntent().getBooleanExtra(EXTRA_SAVED_BY_PHONE, false);
+        if (savedByPhone) exportedVersion = 0; // the unedited original is already in the gallery
         prefs = Prefs.of(this);
         io = Executors.newSingleThreadExecutor();
 
@@ -353,8 +359,8 @@ public class EditorActivity extends Activity implements EditorView.Listener {
             return;
         }
         new AlertDialog.Builder(this)
-                .setTitle(R.string.discard_title)
-                .setMessage(R.string.discard_body)
+                .setTitle(savedByPhone ? R.string.discard_changes_title : R.string.discard_title)
+                .setMessage(savedByPhone ? R.string.discard_changes_body : R.string.discard_body)
                 .setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface d, int which) {

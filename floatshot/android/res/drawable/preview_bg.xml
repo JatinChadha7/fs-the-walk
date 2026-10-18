@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A sketch of a phone screen for the button preview: a few lines of "content". -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="16dp" />
+            <gradient android:angle="270" android:startColor="@color/preview_top" android:endColor="@color/preview_bottom" />
+        </shape>
+    </item>
+    <item android:top="22dp" android:left="18dp" android:width="150dp" android:height="10dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="5dp" />
+            <solid android:color="@color/preview_line" />
+        </shape>
+    </item>
+    <item android:top="44dp" android:left="18dp" android:width="96dp" android:height="10dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="5dp" />
+            <solid android:color="@color/preview_line" />
+        </shape>
+    </item>
+    <item android:top="66dp" android:left="18dp" android:width="124dp" android:height="10dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="5dp" />
+            <solid android:color="@color/preview_line" />
+        </shape>
+    </item>
+    <item android:top="88dp" android:left="18dp" android:width="70dp" android:height="10dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="5dp" />
+            <solid android:color="@color/preview_line" />
+        </shape>
+    </item>
+</layer-list>

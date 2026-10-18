@@ -17,6 +17,11 @@
     <color name="chip_off_bg">#ECEAF3</color>
     <color name="chip_off_text">#5C5A69</color>
 
+    <color name="choice_selected_bg">#EDE8FF</color>
+    <color name="preview_top">#ECEAF5</color>
+    <color name="preview_bottom">#D9D5E8</color>
+    <color name="preview_line">#1F17161D</color>
+
     <!-- Editor, always dark. -->
     <color name="editor_bg">#111015</color>
     <color name="editor_icon">#E6E4EE</color>

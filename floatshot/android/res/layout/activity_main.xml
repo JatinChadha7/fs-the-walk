@@ -51,8 +51,11 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Step 1: overlay permission -->
-        <LinearLayout style="@style/Card" android:layout_marginTop="24dp">
+        <!-- Overlay permission -->
+        <LinearLayout
+            android:id="@+id/overlay_card"
+            style="@style/Card"
+            android:layout_marginTop="24dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -85,7 +88,88 @@
                 android:text="@string/open_app_info" />
         </LinearLayout>
 
-        <!-- Step 2: start / stop the button -->
+        <!-- Floating button on/off -->
+        <LinearLayout
+            style="@style/Card"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/CardTitle"
+                    android:layout_width="match_parent"
+                    android:layout_weight="0"
+                    android:text="@string/bubble_title" />
+
+                <TextView android:id="@+id/bubble_body" style="@style/CardBody" />
+            </LinearLayout>
+
+            <Switch
+                android:id="@+id/bubble_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:contentDescription="@string/bubble_title" />
+        </LinearLayout>
+
+        <!-- Button style -->
+        <LinearLayout style="@style/Card">
+
+            <TextView
+                style="@style/CardTitle"
+                android:layout_width="match_parent"
+                android:layout_weight="0"
+                android:text="@string/style_title" />
+
+            <FrameLayout
+                android:id="@+id/style_preview"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/preview_bg" />
+
+            <TextView style="@style/PickerLabel" android:text="@string/style_color" />
+
+            <LinearLayout android:id="@+id/style_colors" style="@style/PickerRow" />
+
+            <TextView style="@style/PickerLabel" android:text="@string/style_icon" />
+
+            <LinearLayout android:id="@+id/style_icons" style="@style/PickerRow" />
+
+            <EditText
+                android:id="@+id/style_letters"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:hint="@string/letters_hint"
+                android:importantForAutofill="no"
+                android:inputType="textCapCharacters|textNoSuggestions"
+                android:maxLength="2"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="16sp" />
+
+            <TextView style="@style/PickerLabel" android:text="@string/style_size" />
+
+            <LinearLayout android:id="@+id/style_sizes" style="@style/PickerRow" />
+
+            <TextView style="@style/PickerLabel" android:text="@string/style_idle" />
+
+            <LinearLayout android:id="@+id/style_idle" style="@style/PickerRow" />
+
+            <TextView
+                android:id="@+id/style_idle_body"
+                style="@style/CardBody"
+                android:layout_marginTop="8dp"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Phone screenshot buttons -->
         <LinearLayout style="@style/Card">
 
             <LinearLayout
@@ -94,17 +178,36 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <TextView style="@style/CardTitle" android:text="@string/step2_title" />
+                <TextView style="@style/CardTitle" android:text="@string/watch_title" />
 
-                <TextView android:id="@+id/bubble_chip" style="@style/Chip" />
+                <Switch
+                    android:id="@+id/watch_switch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:contentDescription="@string/watch_title" />
             </LinearLayout>
 
-            <TextView android:id="@+id/bubble_body" style="@style/CardBody" />
+            <TextView style="@style/CardBody" android:text="@string/watch_body" />
 
-            <Button
-                android:id="@+id/bubble_button"
-                style="@style/FilledButton"
-                android:text="@string/start_bubble" />
+            <TextView
+                android:id="@+id/watch_hint"
+                style="@style/CardBody"
+                android:layout_marginTop="10dp"
+                android:textColor="@color/chip_wait_text"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/watch_app_info"
+                style="@style/LinkButton"
+                android:text="@string/open_app_info" />
+
+            <TextView
+                android:id="@+id/watch_tip"
+                style="@style/CardBody"
+                android:layout_marginTop="10dp"
+                android:text="@string/watch_tip"
+                android:textSize="13sp" />
         </LinearLayout>
 
         <!-- Setting -->
@@ -149,6 +252,7 @@
             <TextView style="@style/Bullet" android:text="@string/howto_2" />
             <TextView style="@style/Bullet" android:text="@string/howto_3" />
             <TextView style="@style/Bullet" android:text="@string/howto_4" />
+            <TextView style="@style/Bullet" android:text="@string/howto_5" />
         </LinearLayout>
 
         <!-- Battery tip -->

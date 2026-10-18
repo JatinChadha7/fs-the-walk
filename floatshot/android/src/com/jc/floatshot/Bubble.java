@@ -11,10 +11,8 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.Shader;
-import android.graphics.drawable.Drawable;
 import android.hardware.display.DisplayManager;
 import android.os.Handler;
 import android.os.Looper;
@@ -41,7 +39,6 @@ final class Bubble {
     private static final String TAG = "FloatShot";
     private static final long IDLE_DELAY_MS = 2500;
     private static final float IDLE_ALPHA = 0.6f;
-    private static final float BUTTON_DP = 52;
     private static final float SHADOW_DP = 7;
 
     private final Context context;
@@ -50,16 +47,19 @@ final class Bubble {
     private final SharedPreferences prefs;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final float dp;
-    private final int size; // window size: the button plus room for its shadow
     private final int touchSlop;
     private final BubbleView view;
     private final WindowManager.LayoutParams lp;
 
+    private BubbleStyle style;
+    private int size; // window size: the button plus room for its shadow
     private TargetView target;
     private boolean shown;
     private boolean captureHidden;
     private boolean dragging;
     private boolean overTarget;
+    private boolean tucked;
+    private boolean wasTucked;
     private float downRawX;
     private float downRawY;
     private int downX;
@@ -67,12 +67,14 @@ final class Bubble {
     private Rect screen; // full screen, cached while dragging
     private int targetX;
     private int targetY;
-    private ValueAnimator snap;
+    private ValueAnimator slide;
 
-    private final Runnable fade = new Runnable() {
+    private final Runnable idle = new Runnable() {
         @Override
         public void run() {
-            if (!dragging) view.animate().alpha(IDLE_ALPHA).setDuration(400).start();
+            if (dragging || !shown || style.idle == BubbleStyle.IDLE_SOLID) return;
+            view.animate().alpha(IDLE_ALPHA).setDuration(400).start();
+            if (style.idle == BubbleStyle.IDLE_TUCK) tuck();
         }
     };
 
@@ -82,7 +84,6 @@ final class Bubble {
         wm = context.getSystemService(WindowManager.class);
         prefs = Prefs.of(context);
         dp = context.getResources().getDisplayMetrics().density;
-        size = Math.round((BUTTON_DP + 2 * SHADOW_DP) * dp);
         touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
         view = new BubbleView(context, SHADOW_DP * dp);
@@ -96,15 +97,38 @@ final class Bubble {
             }
         });
 
-        lp = overlayParams(size, size, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        lp = overlayParams(0, 0, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
         lp.gravity = Gravity.TOP | Gravity.LEFT;
         lp.setTitle("FloatShot button");
+        setStyle(BubbleStyle.load(context));
+    }
+
+    /** Applies a new look; resizes and re-places the button if its size changed. */
+    void setStyle(BubbleStyle newStyle) {
+        style = newStyle;
+        view.setStyle(newStyle);
+        int newSize = Math.round((newStyle.buttonDp() + 2 * SHADOW_DP) * dp);
+        if (newSize != size) {
+            size = newSize;
+            lp.width = size;
+            lp.height = size;
+        }
+        if (shown && !dragging) {
+            if (slide != null) slide.cancel();
+            tucked = false;
+            placeFromPrefs();
+            update();
+            view.animate().cancel();
+            view.setAlpha(1f);
+            scheduleIdle();
+        }
     }
 
     void setShown(boolean show) {
         if (show == shown) return;
         if (show) {
             if (!Settings.canDrawOverlays(context)) return;
+            tucked = false;
             placeFromPrefs();
             try {
                 wm.addView(view, lp);
@@ -114,11 +138,11 @@ final class Bubble {
             }
             shown = true;
             view.setAlpha(1f);
-            scheduleFade();
+            scheduleIdle();
         } else {
             endDrag(false);
-            if (snap != null) snap.cancel();
-            handler.removeCallbacks(fade);
+            if (slide != null) slide.cancel();
+            handler.removeCallbacks(idle);
             try {
                 wm.removeViewImmediate(view);
             } catch (RuntimeException ignored) {
@@ -140,9 +164,11 @@ final class Bubble {
 
     void onScreenChanged() {
         if (!shown || dragging) return;
-        if (snap != null) snap.cancel();
+        if (slide != null) slide.cancel();
+        tucked = false;
         placeFromPrefs();
         update();
+        scheduleIdle();
     }
 
     void destroy() {
@@ -157,11 +183,12 @@ final class Bubble {
         public boolean onTouch(View v, MotionEvent e) {
             switch (e.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    handler.removeCallbacks(fade);
-                    if (snap != null) snap.cancel();
+                    handler.removeCallbacks(idle);
+                    if (slide != null) slide.cancel();
                     view.animate().cancel();
                     view.setAlpha(1f);
                     view.press(true);
+                    wasTucked = tucked;
                     downRawX = e.getRawX();
                     downRawY = e.getRawY();
                     downX = lp.x;
@@ -177,16 +204,22 @@ final class Bubble {
                 }
                 case MotionEvent.ACTION_UP:
                     view.press(false);
-                    if (dragging) endDrag(true);
-                    else v.performClick();
-                    scheduleFade();
+                    if (dragging) {
+                        endDrag(true);
+                    } else if (wasTucked) {
+                        snapToEdge(); // first tap on a tucked button only brings it out
+                    } else {
+                        v.performClick();
+                    }
+                    scheduleIdle();
                     return true;
                 case MotionEvent.ACTION_CANCEL:
                     // Only a real release over ✕ turns the button off.
                     view.press(false);
                     overTarget = false;
-                    endDrag(true);
-                    scheduleFade();
+                    if (dragging) endDrag(true);
+                    else if (wasTucked) snapToEdge();
+                    scheduleIdle();
                     return true;
                 default:
                     return false;
@@ -196,6 +229,7 @@ final class Bubble {
 
     private void startDrag() {
         dragging = true;
+        tucked = false;
         view.press(false);
         screen = screenSize();
         Insets bars = systemBars();
@@ -241,17 +275,30 @@ final class Bubble {
         }
     }
 
+    /** Slides to the nearest side edge, fully on screen, and remembers the spot. */
     private void snapToEdge() {
         Rect a = area();
+        boolean right = lp.x + size / 2 > (a.left + a.right + size) / 2;
+        tucked = false;
+        slideTo(right ? a.right : a.left, clamp(lp.y, a.top, a.bottom), true);
+    }
+
+    /** Slides half the button off the edge it is resting on. */
+    private void tuck() {
+        Rect s = screenSize();
+        boolean right = lp.x + size / 2 > s.width() / 2;
+        tucked = true;
+        slideTo(right ? s.width() - size / 2 : -size / 2, lp.y, false);
+    }
+
+    private void slideTo(final int toX, final int toY, final boolean save) {
+        if (slide != null) slide.cancel();
         final int fromX = lp.x;
         final int fromY = lp.y;
-        boolean right = lp.x + size / 2 > (a.left + a.right + size) / 2;
-        final int toX = right ? a.right : a.left;
-        final int toY = clamp(lp.y, a.top, a.bottom);
-        snap = ValueAnimator.ofFloat(0f, 1f);
-        snap.setDuration(260);
-        snap.setInterpolator(new DecelerateInterpolator(1.5f));
-        snap.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+        slide = ValueAnimator.ofFloat(0f, 1f);
+        slide.setDuration(260);
+        slide.setInterpolator(new DecelerateInterpolator(1.5f));
+        slide.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float t = (Float) animation.getAnimatedValue();
@@ -260,7 +307,7 @@ final class Bubble {
                 update();
             }
         });
-        snap.addListener(new AnimatorListenerAdapter() {
+        slide.addListener(new AnimatorListenerAdapter() {
             private boolean cancelled;
 
             @Override
@@ -270,15 +317,15 @@ final class Bubble {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (!cancelled) savePosition();
+                if (save && !cancelled) savePosition();
             }
         });
-        snap.start();
+        slide.start();
     }
 
-    private void scheduleFade() {
-        handler.removeCallbacks(fade);
-        if (shown) handler.postDelayed(fade, IDLE_DELAY_MS);
+    private void scheduleIdle() {
+        handler.removeCallbacks(idle);
+        if (shown) handler.postDelayed(idle, IDLE_DELAY_MS);
     }
 
     // ---- the ✕ target
@@ -389,68 +436,6 @@ final class Bubble {
 
     private static int clamp(int v, int min, int max) {
         return Math.max(min, Math.min(max, v));
-    }
-
-    // ---- views
-
-    /** A violet disc with the FloatShot glyph and a soft shadow. */
-    private static final class BubbleView extends View {
-        private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint shadow = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Paint ring = new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final Drawable icon;
-        private final float margin;
-        private final float dp;
-        private boolean hidden;
-
-        BubbleView(Context context, float margin) {
-            super(context);
-            this.margin = margin;
-            dp = context.getResources().getDisplayMetrics().density;
-            icon = context.getDrawable(R.drawable.ic_glyph);
-            ring.setStyle(Paint.Style.STROKE);
-            ring.setStrokeWidth(1.5f * dp);
-            ring.setColor(0x4DFFFFFF);
-        }
-
-        void setHidden(boolean hidden) {
-            if (this.hidden == hidden) return;
-            this.hidden = hidden;
-            invalidate();
-        }
-
-        void press(boolean pressed) {
-            float s = pressed ? 0.88f : 1f;
-            animate().scaleX(s).scaleY(s).setDuration(pressed ? 80 : 160).start();
-        }
-
-        @Override
-        protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-            float r = w / 2f;
-            float button = r - margin;
-            fill.setShader(new LinearGradient(0, 0, w, h, 0xFF9B7EFF, 0xFF5530E0, Shader.TileMode.CLAMP));
-            shadow.setShader(new RadialGradient(r, r, r,
-                    new int[] {0x66000000, 0x33000000, 0x00000000},
-                    new float[] {(button - 2 * dp) / r, button / r, 1f},
-                    Shader.TileMode.CLAMP));
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            if (hidden) return;
-            float cx = getWidth() / 2f;
-            float cy = getHeight() / 2f;
-            float button = cx - margin;
-            canvas.save();
-            canvas.translate(0, 1.5f * dp);
-            canvas.drawCircle(cx, cy, cx, shadow);
-            canvas.restore();
-            canvas.drawCircle(cx, cy, button, fill);
-            canvas.drawCircle(cx, cy, button - ring.getStrokeWidth() / 2f, ring);
-            int half = Math.round(13 * dp);
-            icon.setBounds(Math.round(cx) - half, Math.round(cy) - half, Math.round(cx) + half, Math.round(cy) + half);
-            icon.draw(canvas);
-        }
     }
 
     /** Dark fade along the bottom edge with a round ✕ that turns red when the button is over it. */

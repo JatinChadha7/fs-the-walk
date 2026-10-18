@@ -19,12 +19,12 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
-import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
 
 /**
- * Keeps the floating button on screen and owns the screen-capture session it uses.
+ * Runs whatever the user switched on: the floating button (with the screen-capture session it
+ * uses) and the watcher that opens screenshots taken with the phone's own buttons.
  *
  * Android lets an app capture the screen only from a foreground service of type mediaProjection,
  * and only after the user agrees in the system prompt (shown by {@link CaptureActivity}). The
@@ -59,6 +59,7 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
     private final Handler main = new Handler(Looper.getMainLooper());
     private HandlerThread captureThread;
     private Bubble bubble;
+    private ScreenshotWatcher watcher;
     private ScreenGrabber grabber;
     private boolean busy;
     private boolean awaitingConsent;
@@ -74,12 +75,26 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
         return running != null;
     }
 
-    static void start(Context context) {
-        context.startForegroundService(new Intent(context, BubbleService.class));
+    /**
+     * Starts, updates or stops the service to match the settings. Call it from a screen the user
+     * is looking at, or at boot: Android doesn't let apps start it from the background otherwise.
+     */
+    static void sync(Context context) {
+        boolean wanted = Prefs.bubbleReady(context) || Prefs.watchScreenshots(context);
+        if (running != null) {
+            running.applySettings(); // also picks up a newly granted overlay permission
+        } else if (wanted) {
+            context.startForegroundService(new Intent(context, BubbleService.class));
+        }
     }
 
-    static void stop(Context context) {
-        context.stopService(new Intent(context, BubbleService.class));
+    /** True while the floating button is on screen or would be if no editor were open. */
+    static boolean bubbleActive() {
+        return running != null && running.bubble != null;
+    }
+
+    static boolean watching() {
+        return running != null && running.watcher != null;
     }
 
     /** Called on the main thread whenever the service starts or stops. */
@@ -102,28 +117,67 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
             stopSelf();
             return;
         }
-        if (!Settings.canDrawOverlays(this)) {
-            Toast.makeText(this, R.string.no_overlay, Toast.LENGTH_LONG).show();
-            stopSelf();
-            return;
-        }
         running = this;
         captureThread = new HandlerThread("FloatShot capture");
         captureThread.start();
-        bubble = new Bubble(this, new Bubble.Listener() {
-            @Override
-            public void onTap() {
-                capture();
-            }
-
-            @Override
-            public void onDismiss() {
-                Toast.makeText(BubbleService.this, R.string.bubble_stopped, Toast.LENGTH_LONG).show();
-                stopSelf();
-            }
-        });
         Prefs.of(this).registerOnSharedPreferenceChangeListener(this);
+        applySettings();
+    }
+
+    private final Bubble.Listener bubbleListener = new Bubble.Listener() {
+        @Override
+        public void onTap() {
+            capture();
+        }
+
+        @Override
+        public void onDismiss() {
+            // Posted: turning the button off removes it, and this runs inside its touch handling.
+            main.post(new Runnable() {
+                @Override
+                public void run() {
+                    boolean watch = Prefs.watchScreenshots(BubbleService.this);
+                    Toast.makeText(BubbleService.this, watch ? R.string.bubble_off_watching : R.string.bubble_stopped,
+                            Toast.LENGTH_LONG).show();
+                    Prefs.of(BubbleService.this).edit().putBoolean(Prefs.BUBBLE_ON, false).apply();
+                }
+            });
+        }
+    };
+
+    private final ScreenshotWatcher.Listener watchListener = new ScreenshotWatcher.Listener() {
+        @Override
+        public void onScreenshot(Bitmap shot) {
+            if (running == BubbleService.this) openEditor(shot, true);
+        }
+    };
+
+    /** Shows or hides the button and starts or stops the watcher to match the settings. */
+    private void applySettings() {
+        if (running != this) return;
+        boolean wantBubble = Prefs.bubbleReady(this);
+        boolean wantWatcher = Prefs.watchScreenshots(this);
+        if (!wantBubble && !wantWatcher) {
+            stopSelf();
+            return;
+        }
+        if (wantBubble && bubble == null) {
+            bubble = new Bubble(this, bubbleListener);
+        } else if (!wantBubble && bubble != null) {
+            bubble.destroy();
+            bubble = null;
+            stopProjection();
+        }
+        if (bubble != null) bubble.setStyle(BubbleStyle.load(this));
         updateBubble();
+        if (wantWatcher && watcher == null) {
+            watcher = new ScreenshotWatcher(this, new Handler(captureThread.getLooper()), main, watchListener);
+            watcher.start();
+        } else if (!wantWatcher && watcher != null) {
+            watcher.stop();
+            watcher = null;
+        }
+        getSystemService(NotificationManager.class).notify(NOTIFICATION_ID, buildNotification());
         notifyState();
     }
 
@@ -131,6 +185,8 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
     public int onStartCommand(Intent intent, int flags, int startId) {
         String action = intent != null ? intent.getAction() : null;
         if (ACTION_STOP.equals(action)) {
+            // Turns both features off; the settings listener then stops the service.
+            Prefs.of(this).edit().putBoolean(Prefs.BUBBLE_ON, false).putBoolean(Prefs.WATCH_SCREENSHOTS, false).apply();
             stopSelf();
         } else if (ACTION_CAPTURE_ALLOWED.equals(action)) {
             consentDone();
@@ -160,6 +216,10 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
             bubble.destroy();
             bubble = null;
         }
+        if (watcher != null) {
+            watcher.stop();
+            watcher = null;
+        }
         if (captureThread != null) {
             captureThread.quitSafely();
             captureThread = null;
@@ -181,7 +241,12 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        if (Prefs.KEEP_READY.equals(key) && !Prefs.keepReady(this) && !busy) stopProjection();
+        if (key == null) return;
+        if (Prefs.KEEP_READY.equals(key)) {
+            if (!Prefs.keepReady(this) && !busy) stopProjection();
+        } else if (Prefs.BUBBLE_ON.equals(key) || Prefs.WATCH_SCREENSHOTS.equals(key) || key.startsWith("style_")) {
+            applySettings();
+        }
     }
 
     private void updateBubble() {
@@ -229,9 +294,15 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
             Toast.makeText(this, R.string.capture_failed, Toast.LENGTH_SHORT).show();
             return;
         }
+        openEditor(shot, false);
+        if (!Prefs.keepReady(this)) stopProjection();
+    }
+
+    /** @param savedByPhone the phone already saved this screenshot to its gallery */
+    private void openEditor(Bitmap shot, final boolean savedByPhone) {
         final String id = ShotStore.put(this, shot);
         try {
-            startActivity(EditorActivity.intent(this, id));
+            startActivity(EditorActivity.intent(this, id, savedByPhone));
         } catch (RuntimeException e) {
             Log.w(TAG, "editor", e);
         }
@@ -240,15 +311,14 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
             public void run() {
                 // Normally done when the editor appears; this covers an editor that never did.
                 if (bubble != null) bubble.setCaptureHidden(false);
-                if (ShotStore.isWaiting(id)) offerShot(id);
+                if (ShotStore.isWaiting(id)) offerShot(id, savedByPhone);
             }
         }, EDITOR_CHECK_MS);
-        if (!Prefs.keepReady(this)) stopProjection();
     }
 
     /** Fallback when Android didn't let the editor open by itself: a notification that opens it. */
-    private void offerShot(String id) {
-        PendingIntent open = PendingIntent.getActivity(this, 2, EditorActivity.intent(this, id),
+    private void offerShot(String id, boolean savedByPhone) {
+        PendingIntent open = PendingIntent.getActivity(this, 2, EditorActivity.intent(this, id, savedByPhone),
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         Notification n = new Notification.Builder(this, CHANNEL_SHOTS)
                 .setSmallIcon(R.drawable.ic_glyph)
@@ -349,10 +419,13 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
                 new Intent(this, BubbleService.class).setAction(ACTION_STOP), PendingIntent.FLAG_IMMUTABLE);
         Notification.Action stopAction = new Notification.Action.Builder(
                 Icon.createWithResource(this, R.drawable.ic_close), getString(R.string.notif_stop), stop).build();
+        boolean button = bubble != null;
+        boolean phone = watcher != null;
+        int text = button && phone ? R.string.notif_text_both : phone ? R.string.notif_text_watch : R.string.notif_text;
         return new Notification.Builder(this, CHANNEL_BUBBLE)
                 .setSmallIcon(R.drawable.ic_glyph)
                 .setContentTitle(getString(R.string.notif_title))
-                .setContentText(getString(R.string.notif_text))
+                .setContentText(getString(text))
                 .setContentIntent(open)
                 .setOngoing(true)
                 .setShowWhen(false)

@@ -15,4 +15,8 @@
     <color name="chip_wait_text">#F5C46B</color>
     <color name="chip_off_bg">#2A2833</color>
     <color name="chip_off_text">#A8A6B4</color>
+    <color name="choice_selected_bg">#2C2650</color>
+    <color name="preview_top">#2A2833</color>
+    <color name="preview_bottom">#1C1B23</color>
+    <color name="preview_line">#26FFFFFF</color>
 </resources>

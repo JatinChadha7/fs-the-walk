@@ -9,19 +9,51 @@
     <string name="status_needed">Needed</string>
     <string name="status_on">On</string>
     <string name="status_off">Off</string>
-    <string name="step1_title">1 · Allow the floating button</string>
+    <string name="step1_title">Allow the floating button</string>
     <string name="step1_body">FloatShot needs to display over other apps so its button can float on every screen. In the list that opens, pick FloatShot and turn on “Allow display over other apps”.</string>
     <string name="step1_done">FloatShot can display over other apps.</string>
     <string name="step1_button">Allow display over other apps</string>
     <string name="restricted_hint">If Android says it’s a restricted setting: open App info, tap ⋮ at the top right, choose “Allow restricted settings”, then try again.</string>
     <string name="open_app_info">Open App info</string>
-    <string name="step2_title">2 · Floating button</string>
-    <string name="step2_locked">Finish step 1 first.</string>
-    <string name="step2_off">Start it, then tap it on any screen to take a screenshot. The first time, Android asks you to allow screen capture. Tap “Start now”.</string>
-    <string name="step2_on">The button is on. Tap it on any screen to take a screenshot.</string>
-    <string name="start_bubble">Start floating button</string>
-    <string name="stop_bubble">Stop floating button</string>
-    <string name="bubble_started">FloatShot is on. Tap the floating button on any screen.</string>
+    <string name="bubble_title">Floating button</string>
+    <string name="bubble_locked">Allow display over other apps first (above).</string>
+    <string name="bubble_off">Turn it on to keep a screenshot button floating on every screen.</string>
+    <string name="bubble_on">Tap it on any screen to take a screenshot. The first time, Android asks to allow screen capture. Tap “Start”.</string>
+
+    <string name="style_title">Button style</string>
+    <string name="style_color">Colour</string>
+    <string name="style_icon">Icon</string>
+    <string name="style_size">Size</string>
+    <string name="style_idle">When not in use</string>
+    <string name="letters_hint">1 or 2 letters</string>
+    <string name="color_violet">Violet</string>
+    <string name="color_blue">Blue</string>
+    <string name="color_green">Green</string>
+    <string name="color_coral">Coral</string>
+    <string name="color_orange">Orange</string>
+    <string name="color_black">Black</string>
+    <string name="color_white">White</string>
+    <string name="icon_viewfinder">Viewfinder</string>
+    <string name="icon_camera">Camera</string>
+    <string name="icon_scissors">Scissors</string>
+    <string name="icon_pencil">Pencil</string>
+    <string name="icon_letters">Letters</string>
+    <string name="size_s">Small</string>
+    <string name="size_m">Medium</string>
+    <string name="size_l">Large</string>
+    <string name="idle_solid">Solid</string>
+    <string name="idle_fade">Fade</string>
+    <string name="idle_tuck">Tuck in</string>
+    <string name="idle_solid_body">The button always stays fully visible.</string>
+    <string name="idle_fade_body">After a few seconds the button turns see-through, so it hides less of the screen.</string>
+    <string name="idle_tuck_body">After a few seconds the button fades and slides half off the edge. Tap it once to bring it back, then tap again for a screenshot.</string>
+
+    <string name="watch_title">Phone screenshot buttons</string>
+    <string name="watch_body">Android keeps Power + Volume down for itself, so no app can take those keys over. Turn this on and every screenshot you take with them opens straight in the FloatShot editor. Your phone still saves the original to its Screenshots album.</string>
+    <string name="watch_tip">The floating button shows up in screenshots taken with the phone buttons. Pick “Tuck in” above, or turn the button off, if that bothers you.</string>
+    <string name="watch_needs_photos">FloatShot needs access to your photos to see new screenshots. Turn this on again, or allow Photos in App info.</string>
+    <string name="watch_partial">You allowed only some photos. To catch new screenshots, open App info → Permissions → Photos and videos, and choose “Allow all”.</string>
+    <string name="photos_denied">FloatShot can’t see new screenshots without access to your photos.</string>
     <string name="keep_ready_title">Keep screen capture ready</string>
     <string name="keep_ready_body">On: screenshots are instant after you allow screen capture once. Android shows a screen-sharing icon while the button is on, and asks again after you lock your phone. Off: Android asks before every screenshot.</string>
     <string name="howto_title">How to use</string>
@@ -29,22 +61,25 @@
     <string name="howto_2">Mark it up with Pen, Marker, Arrow, Box and Text. Use Blur to hide private details and Crop to keep just the part you need.</string>
     <string name="howto_3">Copy, Save or Share from the top bar. Saved screenshots go to Pictures/FloatShot in your gallery.</string>
     <string name="howto_4">Drag the button to move it. Drag it onto ✕ at the bottom to turn it off.</string>
+    <string name="howto_5">Prefer Power + Volume down? Turn on Phone screenshot buttons and those screenshots open here too.</string>
     <string name="battery_title">Button disappears by itself?</string>
-    <string name="battery_body">Some phones close apps that run in the background. In App info, open Battery and choose “Unrestricted” or “Allow background activity”.</string>
+    <string name="battery_body">Some phones close apps that run in the background. In App info, open Battery and choose “Unrestricted” or “Allow background activity”. FloatShot turns itself back on after a restart.</string>
     <string name="privacy">Your screenshots stay on your phone unless you share them. FloatShot has no internet access.</string>
-    <string name="start_failed">Couldn’t start the floating button. Try again.</string>
+    <string name="start_failed">Couldn’t start FloatShot. Try again.</string>
 
     <!-- Floating button service -->
     <string name="notif_channel">Floating button</string>
     <string name="notif_title">FloatShot is on</string>
     <string name="notif_text">Tap the floating button to take a screenshot.</string>
+    <string name="notif_text_watch">Screenshots you take with your phone buttons open in FloatShot.</string>
+    <string name="notif_text_both">Tap the floating button, or use your phone’s screenshot buttons.</string>
     <string name="notif_stop">Stop</string>
     <string name="shots_channel">Screenshots</string>
     <string name="shot_ready_title">Screenshot taken</string>
     <string name="shot_ready_text">Tap to edit and share it.</string>
     <string name="bubble_description">Take a screenshot</string>
     <string name="bubble_stopped">FloatShot is off. Open the app to turn it back on.</string>
-    <string name="no_overlay">Allow FloatShot to display over other apps first.</string>
+    <string name="bubble_off_watching">Floating button is off. Screenshots from your phone buttons still open in FloatShot.</string>
     <string name="capture_failed">Couldn’t take the screenshot. Try again.</string>
     <string name="capture_refused">FloatShot needs screen capture to take screenshots. Tap the button and choose “Start now”.</string>
 
@@ -80,6 +115,8 @@
     <string name="shot_missing">This screenshot is no longer available.</string>
     <string name="discard_title">Discard this screenshot?</string>
     <string name="discard_body">You haven’t saved, copied or shared it yet.</string>
+    <string name="discard_changes_title">Discard your changes?</string>
+    <string name="discard_changes_body">Your phone already saved the original screenshot. Your changes aren’t saved yet.</string>
     <string name="discard">Discard</string>
     <string name="keep_editing">Keep editing</string>
 </resources>
