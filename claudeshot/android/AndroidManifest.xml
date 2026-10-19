@@ -51,13 +51,15 @@
             android:excludeFromRecents="true"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode" />
 
-        <!-- Each screenshot opens in its own task so closing it returns to the app it came from. -->
+        <!-- Each screenshot opens in its own task so closing it returns to the app it came from.
+             The task stays out of the recent apps: screenshots shouldn't linger there. -->
         <activity
             android:name=".EditorActivity"
             android:exported="false"
             android:label="@string/editor_label"
             android:theme="@style/Theme.ClaudeShot.Editor"
             android:taskAffinity="com.jc.claudeshot.editor"
+            android:excludeFromRecents="true"
             android:autoRemoveFromRecents="true"
             android:windowSoftInputMode="adjustNothing"
             android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|keyboard|navigation|uiMode" />
