@@ -43,8 +43,11 @@ final class Prefs {
         return of(context).getBoolean(WATCH_SCREENSHOTS, false);
     }
 
-    /** Whether the screen-capture session stays open between screenshots. */
+    /**
+     * Whether the screen-capture session stays open between screenshots. Never when Android
+     * allows capture without asking: an open session would only keep its screen-sharing icon up.
+     */
     static boolean keepReady(Context context) {
-        return of(context).getBoolean(KEEP_READY, true);
+        return of(context).getBoolean(KEEP_READY, true) && !CaptureActivity.promptSkipped(context);
     }
 }

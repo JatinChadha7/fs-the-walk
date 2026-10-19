@@ -261,7 +261,7 @@
                     android:layout_weight="0"
                     android:text="@string/keep_ready_title" />
 
-                <TextView style="@style/CardBody" android:text="@string/keep_ready_body" />
+                <TextView android:id="@+id/keep_ready_body" style="@style/CardBody" />
             </LinearLayout>
 
             <Switch
@@ -270,6 +270,30 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:contentDescription="@string/keep_ready_title" />
+        </LinearLayout>
+
+        <!-- Android's "share your screen?" prompt, switched off from a computer -->
+        <LinearLayout style="@style/Card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView style="@style/CardTitle" android:text="@string/skip_title" />
+
+                <TextView android:id="@+id/skip_chip" style="@style/Chip" />
+            </LinearLayout>
+
+            <TextView android:id="@+id/skip_body" style="@style/CardBody" />
+
+            <TextView android:id="@+id/skip_command" style="@style/Command" />
+
+            <TextView
+                android:id="@+id/skip_copy"
+                style="@style/LinkButton"
+                android:text="@string/copy_command" />
         </LinearLayout>
 
         <!-- How to use -->

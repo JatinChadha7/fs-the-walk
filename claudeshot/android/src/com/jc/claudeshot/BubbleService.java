@@ -46,8 +46,10 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
     private static final int NOTIFICATION_ID = 1;
     // ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE, added in API 34 (the app compiles against 30).
     private static final int FGS_TYPE_SPECIAL_USE = 1 << 30;
-    // Lets the "start screen capture?" prompt animate away before the first screenshot.
+    // Lets the "start screen capture?" prompt animate away before the first screenshot; much
+    // shorter when Android skipped the prompt.
     private static final long AFTER_CONSENT_MS = 900;
+    private static final long AFTER_SKIPPED_PROMPT_MS = 150;
     // If the editor hasn't picked the screenshot up by then, it probably wasn't allowed to open.
     private static final long EDITOR_CHECK_MS = 1200;
     private static final long CONSENT_TIMEOUT_MS = 60_000;
@@ -202,7 +204,7 @@ public class BubbleService extends Service implements SharedPreferences.OnShared
                     public void run() {
                         capture();
                     }
-                }, AFTER_CONSENT_MS);
+                }, CaptureActivity.promptSkipped(this) ? AFTER_SKIPPED_PROMPT_MS : AFTER_CONSENT_MS);
             }
         } else if (ACTION_CAPTURE_REFUSED.equals(action)) {
             consentDone();

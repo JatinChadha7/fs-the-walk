@@ -1,16 +1,36 @@
 package com.jc.claudeshot;
 
 import android.app.Activity;
+import android.app.AppOpsManager;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Process;
 import android.util.Log;
 
 /** An invisible screen that shows Android's "start screen capture?" prompt and reports the answer. */
 public class CaptureActivity extends Activity {
     private static final int REQUEST_CAPTURE = 1;
+    // AppOpsManager.OPSTR_PROJECT_MEDIA, which the SDK hides.
+    private static final String OP_PROJECT_MEDIA = "android:project_media";
+
+    /**
+     * True once the user has allowed screen capture for good, which only a computer can set up
+     * (adb shell appops set com.jc.claudeshot PROJECT_MEDIA allow). Android then answers its
+     * "share your screen?" prompt by itself, without showing it.
+     */
+    static boolean promptSkipped(Context context) {
+        try {
+            AppOpsManager ops = context.getSystemService(AppOpsManager.class);
+            return ops.unsafeCheckOpNoThrow(OP_PROJECT_MEDIA, Process.myUid(), context.getPackageName())
+                    == AppOpsManager.MODE_ALLOWED;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle state) {

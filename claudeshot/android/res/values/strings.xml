@@ -56,6 +56,12 @@
     <string name="photos_denied">ClaudeShot can’t see new screenshots without access to your photos.</string>
     <string name="keep_ready_title">Keep screen capture ready</string>
     <string name="keep_ready_body">On: screenshots are instant after you allow screen capture once. Android shows a screen-sharing icon while the button is on, and asks again after you lock your phone. Off: Android asks before every screenshot.</string>
+    <string name="keep_ready_skipped">Not needed: Android no longer asks before screenshots, so ClaudeShot ends screen capture after each one. The screen-sharing icon only shows for a moment.</string>
+    <string name="skip_title">Skip the “Share your screen” prompt</string>
+    <string name="skip_body_off">Android asks “Share your screen with ClaudeShot?” whenever the floating button starts screen capture. You can tell it to stop asking, once, from a computer: turn on USB debugging in Developer options, connect your phone and run this command. ClaudeShot can then capture your screen without asking; it has no internet access, so screenshots stay on your phone.</string>
+    <string name="skip_body_on">Android no longer asks before the floating button takes a screenshot. To have it ask again, run this command from a computer, or uninstall ClaudeShot.</string>
+    <string name="copy_command">Copy command</string>
+    <string name="command_copied">Command copied</string>
     <string name="howto_title">How to use</string>
     <string name="howto_1">Tap the floating button to take a screenshot. It opens in the editor.</string>
     <string name="howto_2">Mark it up with Pen, Marker, Arrow, Box and Text. Use Blur to hide private details and Crop to keep just the part you need.</string>

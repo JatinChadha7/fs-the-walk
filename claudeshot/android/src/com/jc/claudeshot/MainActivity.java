@@ -2,6 +2,8 @@ package com.jc.claudeshot;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
@@ -17,7 +19,10 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/** Settings: the overlay permission, the floating button and its style, and the phone-button screenshots. */
+/**
+ * Settings: the overlay permission, the floating button and its style, the phone-button
+ * screenshots, and how screen capture is set up.
+ */
 public class MainActivity extends Activity {
     private static final int REQUEST_NOTIFICATIONS = 1;
     private static final int REQUEST_PHOTOS = 2;
@@ -34,6 +39,10 @@ public class MainActivity extends Activity {
     private TextView watchHint;
     private View watchAppInfo;
     private Switch keepReady;
+    private TextView keepReadyBody;
+    private TextView skipChip;
+    private TextView skipBody;
+    private TextView skipCommand;
     private StylePicker stylePicker;
     private boolean refreshing;
 
@@ -72,6 +81,10 @@ public class MainActivity extends Activity {
         watchHint = findViewById(R.id.watch_hint);
         watchAppInfo = findViewById(R.id.watch_app_info);
         keepReady = findViewById(R.id.keep_ready);
+        keepReadyBody = findViewById(R.id.keep_ready_body);
+        skipChip = findViewById(R.id.skip_chip);
+        skipBody = findViewById(R.id.skip_body);
+        skipCommand = findViewById(R.id.skip_command);
         stylePicker = new StylePicker(this);
 
         overlayButton.setOnClickListener(new View.OnClickListener() {
@@ -89,6 +102,12 @@ public class MainActivity extends Activity {
         overlayAppInfo.setOnClickListener(appInfo);
         watchAppInfo.setOnClickListener(appInfo);
         findViewById(R.id.battery_app_info).setOnClickListener(appInfo);
+        findViewById(R.id.skip_copy).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                copyCommand();
+            }
+        });
 
         bubbleSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -151,7 +170,15 @@ public class MainActivity extends Activity {
         watchAppInfo.setVisibility(hint != 0 ? View.VISIBLE : View.GONE);
         if (hint != 0) watchHint.setText(hint);
 
+        // Set up from a computer while this screen was in the background, so checked on every refresh.
+        boolean skipped = CaptureActivity.promptSkipped(this);
+        keepReady.setEnabled(!skipped);
         keepReady.setChecked(Prefs.keepReady(this));
+        keepReadyBody.setText(skipped ? R.string.keep_ready_skipped : R.string.keep_ready_body);
+        chip(skipChip, skipped ? R.string.status_on : R.string.status_off,
+                skipped ? R.color.chip_ok_bg : R.color.chip_off_bg, skipped ? R.color.chip_ok_text : R.color.chip_off_text);
+        skipBody.setText(skipped ? R.string.skip_body_on : R.string.skip_body_off);
+        skipCommand.setText("adb shell appops set " + getPackageName() + " PROJECT_MEDIA " + (skipped ? "default" : "allow"));
         stylePicker.refresh();
         refreshing = false;
     }
@@ -222,6 +249,14 @@ public class MainActivity extends Activity {
         } catch (RuntimeException e) {
             Toast.makeText(this, R.string.start_failed, Toast.LENGTH_LONG).show();
         }
+    }
+
+    /** Copies the command shown, to paste into a message or note that reaches the computer. */
+    private void copyCommand() {
+        ClipboardManager clipboard = getSystemService(ClipboardManager.class);
+        clipboard.setPrimaryClip(ClipData.newPlainText(getString(R.string.skip_title), skipCommand.getText()));
+        // Android 13+ confirms copies itself.
+        if (Build.VERSION.SDK_INT < 33) Toast.makeText(this, R.string.command_copied, Toast.LENGTH_SHORT).show();
     }
 
     private void openOverlaySettings() {

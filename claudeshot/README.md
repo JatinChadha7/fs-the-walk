@@ -33,6 +33,7 @@ for apps you install yourself.
 - **Two fingers** zoom in and move around; one finger draws. Long screenshots open fitted to the
   width, with a scroll bar on the right: scroll through them with two fingers.
 - **Top bar:** Copy (paste into any app), Save (to *Pictures/ClaudeShot* in your gallery) and Share.
+  Screenshots don't stay in your recent apps once you leave the editor.
 - **Button style:** seven colours, five icons (viewfinder, camera, scissors, pencil, or your own one
   or two letters, such as *JC*), a size slider (from tiny to large), and what it does when not in use: stay solid, fade, or
   fade and tuck half off the edge. A tucked button comes out on the first tap and takes a
@@ -63,12 +64,36 @@ the long screenshot, it opens in ClaudeShot like any other. Very long ones (more
 screens) open at half resolution so they fit in memory. The floating button can't scroll other
 apps, so its screenshots are always one screen.
 
+### Skip the "Share your screen" prompt
+
+Android asks *"Share your screen with ClaudeShot?"* whenever the floating button starts screen
+capture, and no app can turn that off by itself. You can, once, from a computer:
+
+1. On the phone, open Settings → About phone and tap **Build number** (on some phones it's under
+   *Version*) seven times to unlock Developer options.
+2. In Developer options, turn on **USB debugging**.
+3. On the computer, install Android's [platform-tools](https://developer.android.com/tools/releases/platform-tools),
+   connect the phone with a USB cable and allow debugging when the phone asks.
+4. Run:
+
+   ```sh
+   adb shell appops set com.jc.claudeshot PROJECT_MEDIA allow
+   ```
+
+ClaudeShot's settings then show the prompt card as **On**, and you can turn USB debugging off
+again. From then on ClaudeShot can capture your screen without asking (it has no internet access,
+so screenshots stay on your phone). It also stops keeping screen capture ready between
+screenshots, so the screen-sharing icon only shows for a moment. To have Android ask again, run
+the same command with `default` instead of `allow`, or uninstall ClaudeShot. The command is also
+in the app, with a Copy button.
+
 ### Good to know
 
 - **Screen-sharing icon.** Android only lets apps take screenshots through its screen-capture
   feature, so while *Keep screen capture ready* is on, your phone shows a casting or screen-sharing
   icon in the status bar. Newer Android versions ask for permission again after you lock the
-  phone. Turn the setting off if you'd rather be asked before every screenshot instead.
+  phone. Turn the setting off if you'd rather be asked before every screenshot instead, or
+  [skip the prompt](#skip-the-share-your-screen-prompt) altogether.
 - **Black screenshots.** Banking and video apps block screenshots, so those come out black,
   the same as with the phone's own screenshot button. Right after you allow screen capture, some
   phones send black frames for a moment; ClaudeShot waits for a real one (up to about four

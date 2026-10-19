@@ -109,6 +109,19 @@
         <item name="android:textSize">14sp</item>
     </style>
 
+    <!-- A command to type on a computer; selectable, so it can be copied by hand too. -->
+    <style name="Command">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:background">@drawable/code_bg</item>
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">@color/text</item>
+        <item name="android:textIsSelectable">true</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
     <style name="PickerLabel">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
