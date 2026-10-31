@@ -1,0 +1,52 @@
+name: JC Car Crasher APK
+
+on:
+  push:
+    paths:
+      - 'car-crasher/**'
+      - '.github/workflows/car-crasher-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache build tools
+        uses: actions/cache@v4
+        with:
+          path: car-crasher/android/.tools
+          key: jc-apk-tools-v1
+
+      # Optional: add a repository secret JC_KEYSTORE_B64 (base64 of a PKCS12 keystore) and
+      # JC_KEYSTORE_PASS so every build is signed with the same key and installs as an update.
+      # Without it, each run signs with a fresh key.
+      - name: Restore signing key
+        env:
+          KS_B64: ${{ secrets.JC_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KS_B64" ]; then
+            mkdir -p car-crasher/android/keystore
+            echo "$KS_B64" | base64 -d > car-crasher/android/keystore/jc-release.p12
+          fi
+
+      - name: Build APK
+        env:
+          OUT_APK: ${{ github.workspace }}/JC-Car-Crasher.apk
+          VERSION_CODE: ${{ github.run_number }}
+          KEYSTORE_PASS: ${{ secrets.JC_KEYSTORE_PASS || 'jc-car-crasher' }}
+        run: car-crasher/android/build-apk.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JC-Car-Crasher-apk
+          path: JC-Car-Crasher.apk
